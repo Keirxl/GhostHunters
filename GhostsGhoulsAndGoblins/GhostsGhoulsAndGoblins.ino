@@ -12,6 +12,9 @@
 #define BOSS_SPAWN_CHANCE 95 
 #define GHOST_GHOUL_SPAWN_CHANCE 80
 
+byte RANDOM_BOSS_TIME=2500;
+byte RANDOM_GHOST_TIME=2000;
+
 #define SURVIVAL_TIME 60000 //one minute
 #define GHOST_WAIT_TIME 3000 //time before ghosts and ghouls try to spawn
 #define GHOST_FADE_TIME 100 //time of breath() function
@@ -104,7 +107,10 @@ void loop() {
         break;
     }
   
-
+  //if(gameTimer.getRemaining()<=SURVIVAL_TIME/2){
+    //RANDOM_GHOST_TIME -= 800;
+   // RANDOM_BOSS_TIME -= 800;
+  //}
 
   byte sendData = (blinkType<<2) + signalState;
   if(blinkType==LIGHT || blinkType==BEAM){
@@ -200,7 +206,7 @@ void inertLoop() {
         }
       }
       //ghostWaitTimer.set(GHOST_WAIT_TIME);
-      ghostWaitTimer.set(random(1500)+1500);
+      ghostWaitTimer.set(random(1000)+RANDOM_GHOST_TIME);
     }
   }
 
@@ -215,7 +221,7 @@ void inertLoop() {
         }
       }
       //bossTimer.set(BOSS_TIME);
-      bossTimer.set(random(1500)+2000);
+      bossTimer.set(random(1000)+RANDOM_BOSS_TIME);
     }
   }
 
@@ -437,7 +443,7 @@ void ghostDisplay(){
 
 void ghoulDisplay(){
   breath();
-  setColor(makeColorHSB(195,255,dimness));
+  setColor(makeColorHSB(200,255,dimness));
 }
 
 void bossDisplay(){
