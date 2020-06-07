@@ -13,12 +13,11 @@
 #define GHOST_GHOUL_SPAWN_CHANCE 80
 
 #define SURVIVAL_TIME 60000 //one minute
-#define GHOST_WAIT_TIME 3000
-#define GHOST_FADE_TIME 100
-#define BOSS_TIME 3500
+#define GHOST_WAIT_TIME 3000 //time before ghosts and ghouls try to spawn
+#define GHOST_FADE_TIME 100 //time of breath() function
+#define BOSS_TIME 3500 //time before boss tries to spawn
 #define BOSS_DEAD_TIME 4000 //time beofre boss kills ya
 #define DEAD_TIME 3000 //time before ghosts or ghouls kill ya
-#define LASER_TIME 300
 
 // A B C D E F
 enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
@@ -127,6 +126,7 @@ void inertLoop() {
     }
   }
 
+//FLASHLIGHT AND LASER HANDLING
     if(buttonLongPressed()){
       if(isAlone()){
         blinkType=FLASHLIGHT;
@@ -147,7 +147,7 @@ void inertLoop() {
       }
     }
   
-
+//WIN CONDITION
   if(gameTimer.isExpired()){
     if(blinkType!=DEAD && blinkType!=FLASHLIGHT && blinkType!=LASER){
       blinkType=WIN;
@@ -165,8 +165,7 @@ void inertLoop() {
     }
   }
   
-  //if im not dead,check to see if someone near me is dead. if so. same.
-
+ //if im not dead,check to see if someone near me is dead. if so. same.
   
   if(blinkType!=DEAD && blinkType!=LASER && blinkType!=FLASHLIGHT){
     FOREACH_FACE(f){
@@ -200,7 +199,8 @@ void inertLoop() {
           }
         }
       }
-      ghostWaitTimer.set(GHOST_WAIT_TIME);
+      //ghostWaitTimer.set(GHOST_WAIT_TIME);
+      ghostWaitTimer.set(random(1500)+1500);
     }
   }
 
@@ -214,7 +214,8 @@ void inertLoop() {
           blinkType=BOSS;
         }
       }
-      bossTimer.set(BOSS_TIME);
+      //bossTimer.set(BOSS_TIME);
+      bossTimer.set(random(1500)+2000);
     }
   }
 
@@ -240,7 +241,7 @@ void inertLoop() {
     }
   }else{
     FOREACH_FACE(f){
-    if(!isValueReceivedOnFaceExpired(f)){
+      if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT ||getBlinkType(getLastValueReceivedOnFace(f))==FLASHLIGHT){
           if(blinkType==GHOST){
             blinkType=EMPTY;
@@ -250,7 +251,7 @@ void inertLoop() {
           }
         }
      }
-  }
+    }
   }
   
   //laser sending
@@ -287,7 +288,6 @@ void inertLoop() {
       blinkType=DEAD;
     }
     if(buttonDoubleClicked()){
-      laserTimer.set(LASER_TIME);
       blinkType=EMPTY;
     }
   }
@@ -437,7 +437,7 @@ void ghostDisplay(){
 
 void ghoulDisplay(){
   breath();
-  setColor(makeColorHSB(215,255,dimness));
+  setColor(makeColorHSB(195,255,dimness));
 }
 
 void bossDisplay(){
