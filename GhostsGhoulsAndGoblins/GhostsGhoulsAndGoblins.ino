@@ -1,6 +1,7 @@
 //GhostHunters
-// Try to survive with a friend as ghosts and ghouls rise up
-// into your now hautned mansion!
+// Try to survive with a friend as your mansion is haunted
+// by Ghosts, Ghouls, and Goblins
+
 
 
 #define PALE makeColorHSB(200,60,60)
