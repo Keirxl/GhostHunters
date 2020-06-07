@@ -6,19 +6,21 @@
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
-#define laserHue 75
+#define laserHue 135
+#define bossHue 75
+#define ghoulHue 8
 
 // 100-these gives you the chance of spawn
-#define BOSS_SPAWN_CHANCE 95 
-#define GHOST_GHOUL_SPAWN_CHANCE 80
+#define BOSS_SPAWN_CHANCE 95   //95 seems good 
+#define GHOST_GHOUL_SPAWN_CHANCE 80  //80 seems good
 
 byte RANDOM_BOSS_TIME=3000;
 byte RANDOM_GHOST_TIME=2500;
+#define BOSS_TIME 3500 //time before boss tries to spawn
+#define GHOST_WAIT_TIME 3000 //time before ghosts and ghouls try to spawn
 
 #define SURVIVAL_TIME 60000 //one minute
-#define GHOST_WAIT_TIME 3000 //time before ghosts and ghouls try to spawn
 #define GHOST_FADE_TIME 100 //time of breath() function
-#define BOSS_TIME 3500 //time before boss tries to spawn
 #define BOSS_DEAD_TIME 4000 //time beofre boss kills ya
 #define DEAD_TIME 3500 //time before ghosts or ghouls kill ya
 
@@ -80,6 +82,7 @@ void loop() {
         break;
       case EMPTY:
         setColor(PALE);
+        bossAura();
         break;
       case GHOST:
         ghostDisplay();
@@ -205,8 +208,8 @@ void inertLoop() {
           }
         }
       }
-      //ghostWaitTimer.set(GHOST_WAIT_TIME);
-      ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
+      ghostWaitTimer.set(GHOST_WAIT_TIME);
+      //ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
     }
   }
 
@@ -220,8 +223,8 @@ void inertLoop() {
           blinkType=BOSS;
         }
       }
-      //bossTimer.set(BOSS_TIME);
-      bossTimer.set(random(500)+RANDOM_BOSS_TIME);
+      bossTimer.set(BOSS_TIME);
+      //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
   }
 
@@ -443,16 +446,28 @@ void ghostDisplay(){
 
 void ghoulDisplay(){
   breath();
-  setColor(makeColorHSB(200,255,dimness));
+  setColor(makeColorHSB(ghoulHue,255,dimness));
 }
 
 void bossDisplay(){
-  setColorOnFace(makeColorHSB(12,255,random(65)+190),random(5));
+  setColorOnFace(makeColorHSB(bossHue,245,random(65)+190),random(5));
+}
+
+void bossAura(){
+  FOREACH_FACE(f){
+    if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == BOSS){
+        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),f);
+        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),(f+1)%6);
+        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),(f-1)%6);
+      }
+    }
+  }
 }
 
 void deadDisplay(){
   breath();
-  setColor(makeColorHSB(8,random(55)+200,dimness));
+  setColor(makeColorHSB(15,random(55)+200,dimness));
 }
 
 void winDisplay(){
