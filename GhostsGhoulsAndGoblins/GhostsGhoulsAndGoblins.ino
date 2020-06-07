@@ -12,15 +12,15 @@
 #define BOSS_SPAWN_CHANCE 95 
 #define GHOST_GHOUL_SPAWN_CHANCE 80
 
-byte RANDOM_BOSS_TIME=2500;
-byte RANDOM_GHOST_TIME=2000;
+byte RANDOM_BOSS_TIME=3000;
+byte RANDOM_GHOST_TIME=2500;
 
 #define SURVIVAL_TIME 60000 //one minute
 #define GHOST_WAIT_TIME 3000 //time before ghosts and ghouls try to spawn
 #define GHOST_FADE_TIME 100 //time of breath() function
 #define BOSS_TIME 3500 //time before boss tries to spawn
 #define BOSS_DEAD_TIME 4000 //time beofre boss kills ya
-#define DEAD_TIME 3000 //time before ghosts or ghouls kill ya
+#define DEAD_TIME 3500 //time before ghosts or ghouls kill ya
 
 // A B C D E F
 enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
@@ -206,7 +206,7 @@ void inertLoop() {
         }
       }
       //ghostWaitTimer.set(GHOST_WAIT_TIME);
-      ghostWaitTimer.set(random(1000)+RANDOM_GHOST_TIME);
+      ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
     }
   }
 
@@ -221,7 +221,7 @@ void inertLoop() {
         }
       }
       //bossTimer.set(BOSS_TIME);
-      bossTimer.set(random(1000)+RANDOM_BOSS_TIME);
+      bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
   }
 
