@@ -8,6 +8,10 @@
 #define lightHue 45
 #define laserHue 75
 
+// 100-these gives you the chance of spawn
+#define BOSS_SPAWN_CHANCE 95 
+#define GHOST_GHOUL_SPAWN_CHANCE 80
+
 #define SURVIVAL_TIME 60000 //one minute
 #define GHOST_WAIT_TIME 3000
 #define GHOST_FADE_TIME 100
@@ -82,9 +86,7 @@ void loop() {
         ghoulDisplay();
         break;
       case LIGHT:
-        setColor(makeColorHSB(lightHue,240,100));
-        setColorOnFace(makeColorHSB(lightHue,240,255),receivingFace);
-        setColorOnFace(makeColorHSB(lightHue,240,255),(receivingFace+3)%6);
+        lightDisplay();
         break;
       case FLASHLIGHT:
         setColor(makeColorHSB(lightHue,240,255));
@@ -96,9 +98,7 @@ void loop() {
         setColor(makeColorHSB(laserHue,240,255));
         break;
       case BEAM:
-        setColor(makeColorHSB(laserHue,240,100));
-        setColorOnFace(makeColorHSB(laserHue,240,255),receivingFace);
-        setColorOnFace(makeColorHSB(laserHue,240,255),(receivingFace+3)%6);
+        beamDisplay();
         break;
       default:
         setColor(BLUE);
@@ -186,7 +186,7 @@ void inertLoop() {
       randomHaunting=random(100);
       ghoulOrGhost=(random(100)+random(100));
       if(noGhostNeighbors()){
-        if(randomHaunting>=80){  //CHANGE TO ADJUST SPAWN RATE
+        if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
           if(ghoulOrGhost>=100){
             deadTimer.set(DEAD_TIME);
             highest=185;
@@ -209,7 +209,7 @@ void inertLoop() {
     if(bossTimer.isExpired()){
       randomHaunting=random(100);
       if(noGhostNeighbors()){
-        if(randomHaunting>=95){  //CHANGE TO ADJUST SPAWN RATE
+        if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
           deadTimer.set(BOSS_DEAD_TIME);
           blinkType=BOSS;
         }
@@ -417,6 +417,19 @@ void breath(){
   }
 }
 
+void lightDisplay(){
+  setColor(makeColorHSB(lightHue,random(50)+190,random(70)+70));
+  setColorOnFace(makeColorHSB(lightHue,240,255),receivingFace);
+  setColorOnFace(makeColorHSB(lightHue,240,255),(receivingFace+3)%6);
+}
+
+void beamDisplay(){
+  setColor(makeColorHSB(laserHue,random(50)+190,random(70)+70));
+  setColorOnFace(makeColorHSB(laserHue,240,255),receivingFace);
+  setColorOnFace(makeColorHSB(laserHue,240,255),(receivingFace+3)%6);
+}
+        
+
 void ghostDisplay(){
   breath();
   setColor(makeColorHSB(0,0,dimness));
@@ -428,11 +441,12 @@ void ghoulDisplay(){
 }
 
 void bossDisplay(){
-  setColorOnFace(makeColorHSB(12,255,random(55)+200),random(5));
+  setColorOnFace(makeColorHSB(12,255,random(65)+190),random(5));
 }
 
 void deadDisplay(){
-  setColor(makeColorHSB(8,230,random(55)+200));
+  breath();
+  setColor(makeColorHSB(8,random(55)+200,dimness));
 }
 
 void winDisplay(){
