@@ -82,7 +82,7 @@ void loop() {
         break;
       case EMPTY:
         setColor(PALE);
-        bossAura();
+        //bossAura();
         break;
       case GHOST:
         ghostDisplay();
