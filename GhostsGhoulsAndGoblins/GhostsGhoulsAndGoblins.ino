@@ -22,7 +22,7 @@ byte RANDOM_GHOST_TIME=2500;
 #define SURVIVAL_TIME 60000 //one minute
 #define GHOST_FADE_TIME 100 //time of breath() function
 #define BOSS_DEAD_TIME 4000 //time beofre boss kills ya
-#define DEAD_TIME 3500 //time before ghosts or ghouls kill ya
+#define DEAD_TIME 3000 //time before ghosts or ghouls kill ya
 
 // A B C D E F
 enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
