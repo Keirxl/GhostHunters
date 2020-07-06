@@ -1,6 +1,7 @@
 //GhostHunters
 // Try to survive with a friend as your mansion is haunted
 // by Ghosts, Ghouls, and Goblins
+//With Levvels
 
 
 
@@ -34,7 +35,7 @@ enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
 byte blinkType=WIN;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
-byte levelDifficulty=1;
+byte levelDifficulty;
 
 Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you los
@@ -62,6 +63,7 @@ byte receivedLevelDifficulty;
 void setup() {
   // put your setup code here, to run once:
   randomize();
+  levelDifficulty=1;
   ghostWaitTimer.set(GHOST_WAIT_TIME);
   gameTimer.set(SURVIVAL_TIME);
 }
