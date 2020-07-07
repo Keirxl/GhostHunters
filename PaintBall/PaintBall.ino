@@ -9,29 +9,34 @@
 #define lightHue 45
 #define laserHue 135
 #define bossHue 75
-#define ghoulHue 8
+#define ghoulHue 20 //orange
+#define redHue 8
 
 // 100-these gives you the chance of spawn
-int BOSS_SPAWN_CHANCE;   //95 seems good 
-int GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
+int GREENTARGET_SPAWN_CHANCE;   //95 seems good 
+int PURPLETARGET_ORANGETARGET_SPAWN_CHANCE;  //80 seems good
 
 //Timing of Spawns
-int BOSS_TIME;
-int GHOST_WAIT_TIME;
+int GREENTARGET_TIME;
+int PURPLETARGET_WAIT_TIME;
 
 //time to kill mobs
-int BOSS_DEAD_TIME;
+int GREENTARGET_DEAD_TIME;
 int DEAD_TIME;
 
 
 
 
 #define SURVIVAL_TIME 60000 //one minute
-#define GHOST_FADE_TIME 100 //time of breath() function
+#define PURPLETARGET_FADE_TIME 100 //time of breath() function
 
+
+//---------------
+//  Signals
+//---------------
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,YELLOWY,BLUEY,DEAD,WIN,BOSS};
+enum blinkType {EMPTY,PURPLETARGET,ORANGETARGET,DEAD,WIN,GREENTARGET,YELLOWY,BLUEY,REDY};
 byte blinkType=WIN;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -53,6 +58,7 @@ bool isDecrease=false;// for the ghost fade in
 byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
+byte paintBallColor=1;
 
 
 
@@ -65,7 +71,7 @@ void setup() {
   // put your setup code here, to run once:
   randomize();
   levelDifficulty=1;
-  ghostWaitTimer.set(GHOST_WAIT_TIME);
+  ghostWaitTimer.set(PURPLETARGET_WAIT_TIME);
   gameTimer.set(SURVIVAL_TIME);
 }
 
@@ -91,17 +97,17 @@ void loop() {
       case WIN:
         winDisplay();
         break;
-      case BOSS:
+      case GREENTARGET:
         bossDisplay();
         break;
       case EMPTY:
         setColor(PALE);
         //bossAura();
         break;
-      case GHOST:
+      case PURPLETARGET:
         ghostDisplay();
         break;
-      case GHOUL:
+      case ORANGETARGET:
         ghoulDisplay();
         break;
       case YELLOWY:
@@ -111,9 +117,6 @@ void loop() {
           lightDisplay();
         }
         break;
-      case DEAD:
-         deadDisplay();
-         break;
       case BLUEY:
         if(source){
           setColor(makeColorHSB(laserHue,240,255));
@@ -121,6 +124,16 @@ void loop() {
           beamDisplay();
         }
         break;
+      case REDY:
+        if(source){
+          setColor(makeColorHSB(redHue,250,255));
+        }else{
+          redyDisplay();
+        }
+        break;
+      case DEAD:
+         deadDisplay();
+         break;
       default:
         setColor(BLUE);
         break;
@@ -135,7 +148,7 @@ void loop() {
     setValueSentOnAllFaces(sendData);
   }else{
     byte sendData = (blinkType<<2) + signalState;
-    if(blinkType==YELLOWY || blinkType==BLUEY){
+    if(blinkType==YELLOWY || blinkType==BLUEY || blinkType==REDY){
       if(source){
         setValueSentOnAllFaces(sendData);
       }else{
@@ -156,8 +169,8 @@ void levelSelectLoop(){
     byte clicks=buttonClickCount();
     if(clicks==3){
       blinkType=EMPTY;
-      ghostWaitTimer.set(GHOST_WAIT_TIME);
-      bossTimer.set(BOSS_TIME);
+      ghostWaitTimer.set(PURPLETARGET_WAIT_TIME);
+      bossTimer.set(GREENTARGET_TIME);
       gameTimer.set(SURVIVAL_TIME);
       signalState=GO;
     }
@@ -229,14 +242,15 @@ void PLAYLoop() {
     if(buttonLongPressed()){
       if(isAlone()){
         source=true;
-        blinkType=YELLOWY;
+        paintBallColor=1;
+        colorHandling();
       }
     }
-    if(blinkType==YELLOWY && source==true){
+    if(source==true){
       if(buttonSingleClicked()){
         if(isAlone()){
-          source=true;
-          blinkType=BLUEY;
+          paintBallColor++;
+          colorHandling();
         }
       }
     }
@@ -278,57 +292,73 @@ void PLAYLoop() {
     }
   }
 
-  //GHOST AND GHOUL SPAWNING
+  //PURPLETARGET AND ORANGETARGET SPAWNING
   if(blinkType==EMPTY){
     if(ghostWaitTimer.isExpired()){
       //check for neighborGhosts. dont spawn a ghost if neighbor is a ghosts 
       randomHaunting=random(100);
       ghoulOrGhost=(random(100)+random(100));
       if(noGhostNeighbors()){
-        if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
+        if(randomHaunting>=PURPLETARGET_ORANGETARGET_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
           if(ghoulOrGhost>=100){
             deadTimer.set(DEAD_TIME);
             highest=185;
             lowest=140;
-            blinkType=GHOUL;
+            blinkType=ORANGETARGET;
           }else{
             deadTimer.set(DEAD_TIME);
             highest=185;
             lowest=140;
-            blinkType=GHOST;
+            blinkType=PURPLETARGET;
           }
         }
       }
-      ghostWaitTimer.set(GHOST_WAIT_TIME);
-      //ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
+      ghostWaitTimer.set(PURPLETARGET_WAIT_TIME);
+      //ghostWaitTimer.set(random(500)+RANDOM_PURPLETARGET_TIME);
     }
   }
 
-  //BOSS SPAWNING
+  //GREENTARGET SPAWNING
   if(blinkType==EMPTY){
     if(bossTimer.isExpired()){
       randomHaunting=random(100);
       if(noGhostNeighbors()){
-        if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
-          deadTimer.set(BOSS_DEAD_TIME);
-          blinkType=BOSS;
+        if(randomHaunting>=GREENTARGET_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
+          deadTimer.set(GREENTARGET_DEAD_TIME);
+          blinkType=GREENTARGET;
         }
       }
-      bossTimer.set(BOSS_TIME);
-      //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
+      bossTimer.set(GREENTARGET_TIME);
+      //bossTimer.set(random(500)+RANDOM_GREENTARGET_TIME);
     }
   }
 
-  //BOSS KILLING (if getting flashlight and laser then boss dies
-  if(blinkType==BOSS){
+  //GREENTARGET KILLING (if getting flashlight and laser then boss dies
+  if(blinkType==GREENTARGET){
     if(isReceivingLaser() && isReceivingLight()){
       blinkType=EMPTY;
     }
   }
 
- 
+  //PURPLE KILLING
+  if(blinkType==PURPLETARGET){
+    if(isReceivingLaser() && isReceivingRED()){
+      blinkType=EMPTY;
+    }
+  }
+
+  //ORANGE KILLING
+  if(blinkType==ORANGETARGET){
+    if(isReceivingLight() && isReceivingRED()){
+      blinkType=EMPTY;
+    }
+  }
+
+//-----------------------------------------
+// Super Clunky Signal Sending Chunk (SCSC)
+//-----------------------------------------
   
-  //light sending
+  // YELLOWY
   if(blinkType==YELLOWY && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==YELLOWY){
@@ -343,9 +373,7 @@ void PLAYLoop() {
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==YELLOWY){
-          if(blinkType==GHOST){
-            blinkType=EMPTY;
-          }else if(blinkType==EMPTY){
+          if(blinkType==EMPTY){
             receivingFace=f;
             blinkType=YELLOWY;
           }
@@ -354,7 +382,8 @@ void PLAYLoop() {
     }
   }
   
-  //laser sending
+  // BLUEY
+  
   if(blinkType==BLUEY && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BLUEY){
@@ -369,10 +398,7 @@ void PLAYLoop() {
     FOREACH_FACE(f){
     if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==BLUEY){
-          //kill the ghost!
-          if(blinkType==GHOUL){
-            blinkType=EMPTY;
-          }else if(blinkType==EMPTY){
+          if(blinkType==EMPTY){
             receivingFace=f;
             blinkType=BLUEY;
           }
@@ -380,10 +406,35 @@ void PLAYLoop() {
      }
   }
   }
+
+  // REDY
+  
+  if(blinkType==REDY && source==false){
+    if(!isValueReceivedOnFaceExpired(receivingFace)){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==REDY){
+        blinkType=REDY;
+      }else{
+        blinkType=EMPTY;
+      }
+    }else{
+      blinkType=EMPTY;
+    }
+  }else{
+    FOREACH_FACE(f){
+    if(!isValueReceivedOnFaceExpired(f)){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==REDY){
+          if(blinkType==EMPTY){
+            receivingFace=f;
+            blinkType=REDY;
+          }
+        }
+     }
+  }
+  }
   
 
-  //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
-  if(blinkType==GHOST || blinkType==GHOUL){
+  //IF I DONT KILL THE PURPLETARGETS OR ORANGETARGETS FAST ENOUGH I DIE
+  if(blinkType==PURPLETARGET || blinkType==ORANGETARGET){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
     }
@@ -392,8 +443,8 @@ void PLAYLoop() {
     }
   }
 
-  //IF I DONT KILL THE BOSS FAST ENOUGH I DIE
-  if(blinkType==BOSS){
+  //IF I DONT KILL THE GREENTARGET FAST ENOUGH I DIE
+  if(blinkType==GREENTARGET){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
     }
@@ -423,29 +474,29 @@ void goLoop() {
 
   switch(levelDifficulty){
     case 1: //no bosses(goblins) and low spawn rate
-      BOSS_SPAWN_CHANCE=101;
-      GHOST_GHOUL_SPAWN_CHANCE=80;
+      GREENTARGET_SPAWN_CHANCE=101;
+      PURPLETARGET_ORANGETARGET_SPAWN_CHANCE=80;
       DEAD_TIME=8000;
-      GHOST_WAIT_TIME=3000;
+      PURPLETARGET_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
       break;
     case 2: //the og difficulty
-      BOSS_SPAWN_CHANCE=95;
-      GHOST_GHOUL_SPAWN_CHANCE=80;
-      BOSS_DEAD_TIME=4000;
+      GREENTARGET_SPAWN_CHANCE=95;
+      PURPLETARGET_ORANGETARGET_SPAWN_CHANCE=80;
+      GREENTARGET_DEAD_TIME=4000;
       DEAD_TIME=3000;
-      BOSS_TIME=3500;
-      GHOST_WAIT_TIME=3000;
+      GREENTARGET_TIME=3500;
+      PURPLETARGET_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
       bossTimer.set(3500);
       break;
     case 3:
-      BOSS_SPAWN_CHANCE=90;
-      GHOST_GHOUL_SPAWN_CHANCE=80;
-      BOSS_DEAD_TIME=4000;
+      GREENTARGET_SPAWN_CHANCE=90;
+      PURPLETARGET_ORANGETARGET_SPAWN_CHANCE=80;
+      GREENTARGET_DEAD_TIME=4000;
       DEAD_TIME=3000;
-      BOSS_TIME=3100;
-      GHOST_WAIT_TIME=2500;
+      GREENTARGET_TIME=3100;
+      PURPLETARGET_WAIT_TIME=2500;
       ghostWaitTimer.set(2500);     
       bossTimer.set(3000);
       break;
@@ -453,6 +504,7 @@ void goLoop() {
   }
   gameTimer.set(SURVIVAL_TIME);
   blinkType=EMPTY;
+  source=false;
 
   //look for neighbors who have not heard the news
   FOREACH_FACE(f) {
@@ -472,6 +524,7 @@ void resolveLoop() {
   signalState = LEVELSELECT;//I default to this at the start of the loop. Only if I see a problem does this not happen
 
   blinkType=EMPTY;
+  source=false;
   
   
   //look for neighbors who have not moved to RESOLVE
@@ -519,12 +572,28 @@ bool isReceivingLight(){
   }
 }
 
+bool isReceivingRED(){
+  byte reds=0;
+  FOREACH_FACE(f){
+    if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == REDY){
+        reds++;
+      }
+    }
+  }
+  if(reds==0){
+    return false;
+  }else{
+    return true;
+  }
+}
+
 //returns true if there are no ghosts nearby
 bool noGhostNeighbors(){
   byte ghosts=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == GHOST || getBlinkType(getLastValueReceivedOnFace(f)) == GHOUL || getBlinkType(getLastValueReceivedOnFace(f)) == BOSS){//This neighbor isn't in RESOLVE. Stay in RESOLVE
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == PURPLETARGET || getBlinkType(getLastValueReceivedOnFace(f)) == ORANGETARGET || getBlinkType(getLastValueReceivedOnFace(f)) == GREENTARGET){//This neighbor isn't in RESOLVE. Stay in RESOLVE
         ghosts++;
       }
     }
@@ -550,7 +619,7 @@ void breath(){
       dimness=180;
       isDecrease=false;
     }
-    ghostFadeInTimer.set(GHOST_FADE_TIME);
+    ghostFadeInTimer.set(PURPLETARGET_FADE_TIME);
   }
 }
 
@@ -565,11 +634,17 @@ void beamDisplay(){
   setColorOnFace(makeColorHSB(laserHue,240,255),receivingFace);
   setColorOnFace(makeColorHSB(laserHue,240,255),(receivingFace+3)%6);
 }
+
+void redyDisplay(){
+  setColor(makeColorHSB(redHue,random(50)+190,random(70)+70));
+  setColorOnFace(makeColorHSB(redHue,240,255),receivingFace);
+  setColorOnFace(makeColorHSB(redHue,240,255),(receivingFace+3)%6);
+}
         
 
 void ghostDisplay(){
   breath();
-  setColor(makeColorHSB(0,0,dimness));
+  setColor(makeColorHSB(195,255,dimness));
 }
 
 void ghoulDisplay(){
@@ -595,7 +670,7 @@ void winDisplay(){
       }else{
       setColor(dim(WHITE,175));
     }
-    ghostFadeInTimer.set(GHOST_FADE_TIME);
+    ghostFadeInTimer.set(PURPLETARGET_FADE_TIME);
   }
 }
 
@@ -606,6 +681,23 @@ void levelSelectDisplay(){
     if(f<levelDifficulty){
       setColorOnFace(WHITE,f);
     }
+  }
+}
+
+//PAINT BALL COLOR HANDLING
+
+void colorHandling(){
+ byte paintBallColorModded = (paintBallColor%3) + 1;
+  switch(paintBallColorModded){
+    case 1:
+      blinkType=YELLOWY;
+      break;
+    case 2:
+      blinkType=BLUEY;
+      break;
+    case 3:
+      blinkType=REDY;
+      break;
   }
 }
 
