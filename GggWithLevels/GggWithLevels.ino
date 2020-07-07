@@ -411,13 +411,8 @@ void PLAYLoop() {
   }
   }
 
-  //Emp Sending
-  if(blinkType==EMP && source==true){
-    if(buttonDoubleClicked(){
-      empBurstTimer.set(1000);
-      hp--;
-    }
-  }
+ 
+  
   
 
   //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
