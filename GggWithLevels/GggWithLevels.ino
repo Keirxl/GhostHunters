@@ -31,7 +31,7 @@ int DEAD_TIME;
 
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS,EMP,BURST};
+enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS,EMP};
 byte blinkType=WIN;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -131,16 +131,30 @@ void loop() {
         break;
     }
   }else{
-    levelSelectDisplay();
+    if(source){
+      switch(blinkType){
+        case EMP:
+          setColor(MAGENTA);
+          break;
+        case LIGHT:
+          setColor(makeColorHSB(laserHue,240,255));
+          break;
+        case BEAM:
+          setColor(makeColorHSB(laserHue,240,255));
+          break;
+      }
+    }else{
+      levelSelectDisplay();
+    }
   }
 
 
   if(signalState==LEVELSELECT){
-    byte sendData = (levelDifficulty<<4) + signalState;
+    byte sendData = (levelDifficulty<<2) + signalState;
     setValueSentOnAllFaces(sendData);
   }else{
     byte sendData = (blinkType<<2) + signalState;
-    if(blinkType==LIGHT || blinkType==BEAM){
+    if(blinkType==LIGHT || blinkType==BEAM || blinkType==EMP){
       if(source){
         setValueSentOnAllFaces(sendData);
       }else{
@@ -155,6 +169,15 @@ void loop() {
 
 void levelSelectLoop(){
 
+
+  //WEAPON MAKER
+  if(buttonLongPressed()){
+      if(isAlone()){
+        source=true;
+        weaponType=1;
+        weaponHandling();
+      }
+    }
 
   //CHANGE TO PLAY STAGE
   if(buttonMultiClicked()){
@@ -171,7 +194,7 @@ void levelSelectLoop(){
 //LEVEL TOGGLE
   if(buttonSingleClicked()){
     levelDifficulty++;
-    if(levelDifficulty>3){
+    if(levelDifficulty>6){
       levelDifficulty=1;
     }
   }
@@ -183,23 +206,12 @@ void levelSelectLoop(){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getLevelDifficulty(getLastValueReceivedOnFace(f)) != 0){
           receivedLevelDifficulty = getLevelDifficulty(getLastValueReceivedOnFace(f));
-          switch(levelDifficulty){
-            case 1:
-              if(receivedLevelDifficulty==2){
-                levelDifficulty=2;
-              }
-              break;
-            case 2:
-              if(receivedLevelDifficulty==3){
-                levelDifficulty=3;
-              }
-              break;
-            case 3:
-              if(receivedLevelDifficulty==1){
-                levelDifficulty=1;
-              }
-              break;
-              
+          if(levelDifficulty==1 && receivedLevelDifficulty==6){
+            levelDifficulty = 1;
+          }else if(levelDifficulty!=6 && levelDifficulty < receivedLevelDifficulty){
+            levelDifficulty = receivedLevelDifficulty;
+          }else if(levelDifficulty==6 && receivedLevelDifficulty==1){
+            levelDifficulty=1;
           }
         }
       }
@@ -458,11 +470,18 @@ void goLoop() {
     case 1: //no bosses(goblins) and low spawn rate
       BOSS_SPAWN_CHANCE=101;
       GHOST_GHOUL_SPAWN_CHANCE=80;
-      DEAD_TIME=8000;
+      DEAD_TIME=5000;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
       break;
-    case 2: //the og difficulty
+    case 2: 
+      BOSS_SPAWN_CHANCE=101;
+      GHOST_GHOUL_SPAWN_CHANCE=75;
+      DEAD_TIME=4000;
+      GHOST_WAIT_TIME=3000;
+      ghostWaitTimer.set(3000);     
+      break;
+    case 3:   //the og difficulty
       BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       BOSS_DEAD_TIME=4000;
@@ -472,7 +491,7 @@ void goLoop() {
       ghostWaitTimer.set(3000);     
       bossTimer.set(3500);
       break;
-    case 3:
+    case 4: //little harderr
       BOSS_SPAWN_CHANCE=90;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       BOSS_DEAD_TIME=4000;
@@ -482,6 +501,27 @@ void goLoop() {
       ghostWaitTimer.set(2500);     
       bossTimer.set(3000);
       break;
+   case 5:                       //oh boy...
+      BOSS_SPAWN_CHANCE=90;
+      GHOST_GHOUL_SPAWN_CHANCE=80;
+      BOSS_DEAD_TIME=4000;
+      DEAD_TIME=3000;
+      BOSS_TIME=3100;
+      GHOST_WAIT_TIME=2500;
+      ghostWaitTimer.set(2500);     
+      bossTimer.set(3000);
+      break;
+   case 6:                      //good luck :)
+      BOSS_SPAWN_CHANCE=70;
+      GHOST_GHOUL_SPAWN_CHANCE=70;
+      BOSS_DEAD_TIME=4000;
+      DEAD_TIME=3000;
+      BOSS_TIME=3100;
+      GHOST_WAIT_TIME=2500;
+      ghostWaitTimer.set(2500);     
+      bossTimer.set(3000);
+      break;
+    
 
   }
   gameTimer.set(SURVIVAL_TIME);
@@ -688,5 +728,5 @@ byte getSignalState(byte data){
 }
 
 byte getLevelDifficulty(byte data){
-  return (data>>4);
+  return (data>>2);
 }
