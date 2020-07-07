@@ -31,11 +31,12 @@ int DEAD_TIME;
 
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
+enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS};
 byte blinkType=WIN;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
 byte levelDifficulty;
+bool source=false;
 
 Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you los
@@ -104,19 +105,21 @@ void loop() {
         ghoulDisplay();
         break;
       case LIGHT:
-        lightDisplay();
-        break;
-      case FLASHLIGHT:
-        setColor(makeColorHSB(lightHue,240,255));
+        if(source){
+          setColor(makeColorHSB(lightHue,240,255));
+        }else{
+          lightDisplay();
+        }
         break;
       case DEAD:
          deadDisplay();
          break;
-      case LASER:
-        setColor(makeColorHSB(laserHue,240,255));
-        break;
       case BEAM:
-        beamDisplay();
+        if(source){
+          setColor(makeColorHSB(laserHue,240,255));
+        }else{
+          beamDisplay();
+        }
         break;
       default:
         setColor(BLUE);
@@ -133,7 +136,11 @@ void loop() {
   }else{
     byte sendData = (blinkType<<2) + signalState;
     if(blinkType==LIGHT || blinkType==BEAM){
-      setValueSentOnFace(sendData,(receivingFace+3)%6);
+      if(source){
+        setValueSentOnAllFaces(sendData);
+      }else{
+        setValueSentOnFace(sendData,(receivingFace+3)%6);
+      }
     }else{
       setValueSentOnAllFaces(sendData);
     }
@@ -163,6 +170,9 @@ void levelSelectLoop(){
       levelDifficulty=1;
     }
   }
+
+
+// use % here to make it so increase always happens and it just goes around the bend
 
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
@@ -218,27 +228,29 @@ void PLAYLoop() {
 //FLASHLIGHT AND LASER HANDLING
     if(buttonLongPressed()){
       if(isAlone()){
-        blinkType=FLASHLIGHT;
+        source=true;
+        blinkType=LIGHT;
       }
     }
-    if(blinkType==FLASHLIGHT){
-      if(buttonDoubleClicked()){
+    if(blinkType==LIGHT && source==true){
+      if(buttonSingleClicked()){
         if(isAlone()){
-          blinkType=LASER;
+          source=true;
+          blinkType=BEAM;
         }
       }
     }
-    if(blinkType==LASER){
-      if(buttonDoubleClicked()){
+    if(blinkType==BEAM && source==true){
+      if(buttonSingleClicked()){
         if(isAlone()){
-          blinkType=FLASHLIGHT;
+          blinkType=LIGHT;
         }
       }
     }
   
 //WIN CONDITION
   if(gameTimer.isExpired()){
-    if(blinkType!=DEAD && blinkType!=FLASHLIGHT && blinkType!=LASER){
+    if(blinkType!=DEAD && source==false){
       blinkType=WIN;
     }
   }
@@ -255,7 +267,7 @@ void PLAYLoop() {
   
  //if im not dead,check to see if someone near me is dead. if so. same.
   
-  if(blinkType!=DEAD && blinkType!=LASER && blinkType!=FLASHLIGHT){
+  if(blinkType!=DEAD && source==false){
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==DEAD){
@@ -317,9 +329,9 @@ void PLAYLoop() {
  
   
   //light sending
-  if(blinkType==LIGHT){
+  if(blinkType==LIGHT && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
-      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT || getBlinkType(getLastValueReceivedOnFace(receivingFace))==FLASHLIGHT){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT){
         blinkType=LIGHT;
       }else{
         blinkType=EMPTY;
@@ -330,7 +342,7 @@ void PLAYLoop() {
   }else{
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT ||getBlinkType(getLastValueReceivedOnFace(f))==FLASHLIGHT){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
           if(blinkType==GHOST){
             blinkType=EMPTY;
           }else if(blinkType==EMPTY){
@@ -343,9 +355,9 @@ void PLAYLoop() {
   }
   
   //laser sending
-  if(blinkType==BEAM){
+  if(blinkType==BEAM && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
-      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM || getBlinkType(getLastValueReceivedOnFace(receivingFace))==LASER){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM){
         blinkType=BEAM;
       }else{
         blinkType=EMPTY;
@@ -356,7 +368,7 @@ void PLAYLoop() {
   }else{
     FOREACH_FACE(f){
     if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM ||getBlinkType(getLastValueReceivedOnFace(f))==LASER){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
           //kill the ghost!
           if(blinkType==GHOUL){
             blinkType=EMPTY;
@@ -478,7 +490,7 @@ bool isReceivingLaser(){
   byte lasers=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == LASER || getBlinkType(getLastValueReceivedOnFace(f)) == BEAM){
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == BEAM){
         lasers++;
       }
     }
@@ -495,7 +507,7 @@ bool isReceivingLight(){
   byte lights=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == FLASHLIGHT || getBlinkType(getLastValueReceivedOnFace(f)) == LIGHT){
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == LIGHT){
         lights++;
       }
     }
@@ -569,17 +581,6 @@ void bossDisplay(){
   setColorOnFace(makeColorHSB(bossHue,245,random(65)+190),random(5));
 }
 
-void bossAura(){
-  FOREACH_FACE(f){
-    if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == BOSS){
-        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),f);
-        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),(f+1)%6);
-        setColorOnFace(makeColorHSB(bossHue,245,random(50)+100),(f-1)%6);
-      }
-    }
-  }
-}
 
 void deadDisplay(){
   breath();
