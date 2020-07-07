@@ -56,11 +56,6 @@ byte receivedLevelDifficulty;
 
 
 
-
-
-
-
-
 void setup() {
   // put your setup code here, to run once:
   randomize();
@@ -575,6 +570,7 @@ void ghostDisplay(){
 void ghoulDisplay(){
   breath();
   setColor(makeColorHSB(ghoulHue,255,dimness));
+  
 }
 
 void bossDisplay(){
