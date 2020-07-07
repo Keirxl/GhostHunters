@@ -31,7 +31,7 @@ int DEAD_TIME;
 
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS};
+enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS,EMP,BURST};
 byte blinkType=WIN;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -44,6 +44,7 @@ Timer laserTimer; //for kill animation
 Timer ghostFadeInTimer;
 Timer gameTimer;
 Timer bossTimer;
+Timer empBurstTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
@@ -53,6 +54,8 @@ bool isDecrease=false;// for the ghost fade in
 byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
+byte hp=3;
+byte weaponType=1;
 
 
 
@@ -116,6 +119,13 @@ void loop() {
           beamDisplay();
         }
         break;
+      case EMP:
+         if(source){
+          setColor(MAGENTA);
+         }else{
+          setColor(makeColorHSB(245,240,random(125)+130));
+         }
+         break;
       default:
         setColor(BLUE);
         break;
@@ -158,7 +168,7 @@ void levelSelectLoop(){
     }
   }
 
-  //LEVEL TOGGLE
+//LEVEL TOGGLE
   if(buttonSingleClicked()){
     levelDifficulty++;
     if(levelDifficulty>3){
@@ -219,29 +229,37 @@ void PLAYLoop() {
       levelDifficulty=1;
     }
   }
+  
+//------------------------------------
+//   FLASHLIGHT AND LASER HANDLING
+//------------------------------------
 
-//FLASHLIGHT AND LASER HANDLING
     if(buttonLongPressed()){
       if(isAlone()){
         source=true;
-        blinkType=LIGHT;
+        weaponType=1;
+        weaponHandling();
       }
     }
-    if(blinkType==LIGHT && source==true){
+    if(source==true){
       if(buttonSingleClicked()){
         if(isAlone()){
           source=true;
-          blinkType=BEAM;
+          weaponType++;
+          if(weaponType>3){
+             weaponType=1;
+          }
+          weaponHandling();
         }
       }
     }
-    if(blinkType==BEAM && source==true){
-      if(buttonSingleClicked()){
-        if(isAlone()){
-          blinkType=LIGHT;
-        }
-      }
+    
+
+   if(source){
+    if(hp<=0){
+      blinkType=DEAD;
     }
+   }
   
 //WIN CONDITION
   if(gameTimer.isExpired()){
@@ -313,16 +331,38 @@ void PLAYLoop() {
       //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
   }
-
-  //BOSS KILLING (if getting flashlight and laser then boss dies
+//----------------
+//   KILLING MOBS 
+//----------------
   if(blinkType==BOSS){
     if(isReceivingLaser() && isReceivingLight()){
+      blinkType=EMPTY;
+    }else if(isReceivingEmpBurst()){
+      blinkType=EMPTY;
+    }
+  }
+
+  if(blinkType==GHOST){
+    if(isReceivingLight()){
+      blinkType=EMPTY;
+    }else if(isReceivingEmpBurst()){
+      blinkType=EMPTY;
+    }
+  }
+
+  if(blinkType==GHOUL){
+    if(isReceivingLaser()){
+      blinkType=EMPTY;
+    }else if(isReceivingEmpBurst()){
       blinkType=EMPTY;
     }
   }
 
  
-  
+//-----------------------------------------
+// Super Clunky Signal Sending Chunk (SCSC)
+//-----------------------------------------
+
   //light sending
   if(blinkType==LIGHT && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
@@ -338,9 +378,7 @@ void PLAYLoop() {
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
-          if(blinkType==GHOST){
-            blinkType=EMPTY;
-          }else if(blinkType==EMPTY){
+          if(blinkType==EMPTY){
             receivingFace=f;
             blinkType=LIGHT;
           }
@@ -364,16 +402,21 @@ void PLAYLoop() {
     FOREACH_FACE(f){
     if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
-          //kill the ghost!
-          if(blinkType==GHOUL){
-            blinkType=EMPTY;
-          }else if(blinkType==EMPTY){
+          if(blinkType==EMPTY){
             receivingFace=f;
             blinkType=BEAM;
           }
         }
      }
   }
+  }
+
+  //Emp Sending
+  if(blinkType==EMP && source==true){
+    if(buttonDoubleClicked(){
+      empBurstTimer.set(1000);
+      hp--;
+    }
   }
   
 
@@ -467,6 +510,9 @@ void resolveLoop() {
   signalState = LEVELSELECT;//I default to this at the start of the loop. Only if I see a problem does this not happen
 
   blinkType=EMPTY;
+  source=false;
+  hp=3;
+
   
   
   //look for neighbors who have not moved to RESOLVE
@@ -508,6 +554,22 @@ bool isReceivingLight(){
     }
   }
   if(lights==0){
+    return false;
+  }else{
+    return true;
+  }
+}
+
+bool isReceivingEmpBurst(){
+  byte emp=0;
+  FOREACH_FACE(f){
+    if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == EMP){
+        emp++;
+      }
+    }
+  }
+  if(emp==0){
     return false;
   }else{
     return true;
@@ -603,6 +665,21 @@ void levelSelectDisplay(){
       setColorOnFace(WHITE,f);
     }
   }
+}
+
+void weaponHandling(){
+  switch(weaponType){
+    case 1:
+      blinkType=LIGHT;
+      break;
+    case 2:
+      blinkType=BEAM;
+      break;
+    case 3:
+      blinkType=EMP;
+      break;
+  }
+  
 }
 
 
