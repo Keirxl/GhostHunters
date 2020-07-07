@@ -25,10 +25,11 @@ byte RANDOM_GHOST_TIME=2500;
 #define DEAD_TIME 3000 //time before ghosts or ghouls kill ya
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,FLASHLIGHT,LASER,BEAM,BOSS};
+enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,DEAD,WIN,BEAM,BOSS};
 byte blinkType=WIN;
 enum signalState {INERT,GO,RESOLVE};
 byte signalState=INERT;
+bool source=false;
 
 byte sendData = (blinkType<<2) + signalState;
 
@@ -91,19 +92,21 @@ void loop() {
         ghoulDisplay();
         break;
       case LIGHT:
-        lightDisplay();
-        break;
-      case FLASHLIGHT:
-        setColor(makeColorHSB(lightHue,240,255));
+        if(source){
+          setColor(makeColorHSB(lightHue,240,255));
+        }else{
+          lightDisplay();
+        }
         break;
       case DEAD:
          deadDisplay();
          break;
-      case LASER:
-        setColor(makeColorHSB(laserHue,240,255));
-        break;
       case BEAM:
-        beamDisplay();
+        if(source){
+          setColor(makeColorHSB(laserHue,240,255));
+        }else{
+          beamDisplay();
+        }
         break;
       default:
         setColor(BLUE);
@@ -117,7 +120,11 @@ void loop() {
 
   byte sendData = (blinkType<<2) + signalState;
   if(blinkType==LIGHT || blinkType==BEAM){
-    setValueSentOnFace(sendData,(receivingFace+3)%6);
+    if(source){
+      setValueSentOnAllFaces(sendData);
+    }else{
+      setValueSentOnFace(sendData,(receivingFace+3)%6);
+    }
   }else{
     setValueSentOnAllFaces(sendData);
   }
@@ -138,27 +145,28 @@ void inertLoop() {
 //FLASHLIGHT AND LASER HANDLING
     if(buttonLongPressed()){
       if(isAlone()){
-        blinkType=FLASHLIGHT;
+        source=true;
+        blinkType=LIGHT;
       }
     }
-    if(blinkType==FLASHLIGHT){
+    if(blinkType==LIGHT && source==true){
       if(buttonDoubleClicked()){
         if(isAlone()){
-          blinkType=LASER;
+          blinkType=BEAM;
         }
       }
     }
-    if(blinkType==LASER){
+    if(blinkType==BEAM && source==true){
       if(buttonDoubleClicked()){
         if(isAlone()){
-          blinkType=FLASHLIGHT;
+          blinkType=LIGHT;
         }
       }
     }
   
 //WIN CONDITION
   if(gameTimer.isExpired()){
-    if(blinkType!=DEAD && blinkType!=FLASHLIGHT && blinkType!=LASER){
+    if(blinkType!=DEAD && source==false){
       blinkType=WIN;
     }
   }
@@ -176,7 +184,7 @@ void inertLoop() {
   
  //if im not dead,check to see if someone near me is dead. if so. same.
   
-  if(blinkType!=DEAD && blinkType!=LASER && blinkType!=FLASHLIGHT){
+  if(blinkType!=DEAD && source==false){
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==DEAD){
@@ -238,9 +246,9 @@ void inertLoop() {
  
   
   //light sending
-  if(blinkType==LIGHT){
+  if(blinkType==LIGHT && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
-      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT || getBlinkType(getLastValueReceivedOnFace(receivingFace))==FLASHLIGHT){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT){
         blinkType=LIGHT;
       }else{
         blinkType=EMPTY;
@@ -251,7 +259,7 @@ void inertLoop() {
   }else{
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT ||getBlinkType(getLastValueReceivedOnFace(f))==FLASHLIGHT){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
           if(blinkType==GHOST){
             blinkType=EMPTY;
           }else if(blinkType==EMPTY){
@@ -264,9 +272,9 @@ void inertLoop() {
   }
   
   //laser sending
-  if(blinkType==BEAM){
+  if(blinkType==BEAM && source==false){
     if(!isValueReceivedOnFaceExpired(receivingFace)){
-      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM || getBlinkType(getLastValueReceivedOnFace(receivingFace))==LASER){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM){
         blinkType=BEAM;
       }else{
         blinkType=EMPTY;
@@ -277,7 +285,7 @@ void inertLoop() {
   }else{
     FOREACH_FACE(f){
     if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM ||getBlinkType(getLastValueReceivedOnFace(f))==LASER){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
           //kill the ghost!
           if(blinkType==GHOUL){
             blinkType=EMPTY;
@@ -328,6 +336,7 @@ void goLoop() {
   signalState = RESOLVE;//I default to this at the start of the loop. Only if I see a problem does this not happen
 
   blinkType=EMPTY;
+  source=false;
   ghostWaitTimer.set(GHOST_WAIT_TIME);
   bossTimer.set(BOSS_TIME);
   gameTimer.set(SURVIVAL_TIME);
@@ -362,7 +371,7 @@ bool isReceivingLaser(){
   byte lasers=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == LASER || getBlinkType(getLastValueReceivedOnFace(f)) == BEAM){
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == BEAM){
         lasers++;
       }
     }
@@ -379,7 +388,7 @@ bool isReceivingLight(){
   byte lights=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == FLASHLIGHT || getBlinkType(getLastValueReceivedOnFace(f)) == LIGHT){
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == LIGHT){
         lights++;
       }
     }
