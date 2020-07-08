@@ -1,7 +1,7 @@
 //GhostHunters
 // Try to survive with a friend as your mansion is haunted
 // by Ghosts, Ghouls, and Goblins
-//With Levvels
+// With Levvels
 
 
 
@@ -32,7 +32,7 @@ int DEAD_TIME;
 
 // A B C D E F
 enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS,EMP};
-byte blinkType=WIN;
+byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
 byte levelDifficulty;
@@ -524,8 +524,9 @@ void goLoop() {
     
 
   }
-  gameTimer.set(SURVIVAL_TIME);
+
   blinkType=EMPTY;
+  gameTimer.set(SURVIVAL_TIME);
 
   //look for neighbors who have not heard the news
   FOREACH_FACE(f) {
