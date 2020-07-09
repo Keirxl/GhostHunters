@@ -306,10 +306,10 @@ void PLAYLoop() {
     if(ghostWaitTimer.isExpired()){
       //check for neighborGhosts. dont spawn a ghost if neighbor is a ghosts 
       randomHaunting=random(100);
-      ghoulOrGhost=(random(100)+random(100));
+      ghoulOrGhost=(random(100));
       if(noGhostNeighbors()){
         if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
-          if(100<ghoulOrGhost){
+          if(55<ghoulOrGhost){
             blinkType=GHOUL;
           }else{
             blinkType=GHOST;
@@ -532,10 +532,10 @@ void goLoop() {
       break;
     case 4: //og difficulty plus poltergeists
       BOSS_SPAWN_CHANCE=95;
-      GHOST_GHOUL_SPAWN_CHANCE=80;
-      POLTER_SPAWN_CHANCE=20;
+      GHOST_GHOUL_SPAWN_CHANCE=85;
+      POLTER_SPAWN_CHANCE=10;
       BOSS_DEAD_TIME=4000;
-      DEAD_TIME=3000;
+      DEAD_TIME=5000;
       BOSS_TIME=3500;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
