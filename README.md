@@ -25,6 +25,7 @@ ________________________________________________________________________________
  
  -  Blinks load in the level select phase, showing the current level on their face.  
  -  Arrange your blinks in any configuration to be the mansion floor and select a level by clicking a blink.  
+    For any level below 4 I suggest only two players for optimal challenge.  
  -  Remove on blink per player to be the gadgets you will defend yourself with. It is important that you only  
     remove the player blinks once the level is selected because otherwise you will have options that only hinder you.
  -  Long holding a blink will turn it into a gadget blink which can then single clicked to cycle through the different weapon types.    
