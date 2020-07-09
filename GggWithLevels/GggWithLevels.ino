@@ -27,7 +27,7 @@ int DEAD_TIME;
 
 
 #define PERIOD 2000
-#define SURVIVAL_TIME 60000 //one minute
+#define SURVIVAL_TIME 20000 //one minute
 
 
 // A B C D E F
@@ -45,11 +45,9 @@ Timer bossTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
-bool isDecrease=false;// for the ghost fade in
 byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
-byte hp=3;
 byte weaponType=1;
 
 
@@ -247,29 +245,24 @@ void PLAYLoop() {
     }
     if(source==true){
       if(buttonSingleClicked()){
-        if(isAlone()){
-          source=true;
           weaponType++;
-          if(levelDifficulty>3){
-            if(weaponType>4){
+          if(levelDifficulty<2){
+            if(weaponType>2){
+               weaponType=1;
+            }
+          }else if(levelDifficulty<4){
+            if(weaponType>3){
                weaponType=1;
             }
           }else{
-            if(weaponType>3){
+            if(weaponType>4){
                weaponType=1;
             }
           }
           weaponHandling();
-        }
+        
       }
     }
-    
-
-   if(source){
-    if(hp<=0){
-      blinkType=DEAD;
-    }
-   }
   
 //WIN CONDITION
   if(gameTimer.isExpired()){
@@ -591,7 +584,6 @@ void resolveLoop() {
 
   blinkType=EMPTY;
   source=false;
-  hp=3;
 
   
   
@@ -726,7 +718,7 @@ void deadDisplay(){
 
 void winDisplay(){
      breath();
-     setColor(makeColorHSB(0,random(50),dimness));
+     setColor(makeColorHSB(45,random(70)+170,dimness));
 }
 
 //DISPLAY CURRENT LEVEL
