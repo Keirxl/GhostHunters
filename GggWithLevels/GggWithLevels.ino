@@ -27,7 +27,7 @@ int DEAD_TIME;
 
 
 #define PERIOD 2000
-#define SURVIVAL_TIME 20000 //one minute
+#define SURVIVAL_TIME 50000 //one minute
 
 
 // A B C D E F
@@ -502,7 +502,7 @@ void goLoop() {
     case 1: // just ghosts and ghouls... classic
       BOSS_SPAWN_CHANCE=101;
       GHOST_GHOUL_SPAWN_CHANCE=80;
-      POLTER_SPAWN_CHANCE=0;
+      POLTER_SPAWN_CHANCE=-10;
       DEAD_TIME=5000;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
