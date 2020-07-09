@@ -35,7 +35,7 @@ ________________________________________________________________________________
     -  EMP; appears MAGENTA    
   -  When you're ready to play triple click the mansion  
   -  At any point you can triple click to change back to the level select phase  
-  
+_____________________________________________________________________________________________________________________________
   **GamePlay:**
   -  When the gameplay begins the mansion will appear dim and empty  
   -  Randomly, apparitions will spawn in the mansion.  
