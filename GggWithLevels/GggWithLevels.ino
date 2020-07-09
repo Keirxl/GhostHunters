@@ -7,13 +7,14 @@
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
-#define laserHue 135
+#define geistHue 135
 #define bossHue 75
 #define ghoulHue 8
 
 // 100-these gives you the chance of spawn
-int BOSS_SPAWN_CHANCE;   //95 seems good 
-int GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
+byte BOSS_SPAWN_CHANCE;   //95 seems good 
+byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
+byte POLTER_SPAWN_CHANCE;
 
 //Timing of Spawns
 int BOSS_TIME;
@@ -25,13 +26,12 @@ int DEAD_TIME;
 
 
 
-
+#define PERIOD 2000
 #define SURVIVAL_TIME 60000 //one minute
-#define GHOST_FADE_TIME 100 //time of breath() function
 
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,LIGHT,BEAM,DEAD,WIN,BOSS,EMP};
+enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,EMP,BOSS,POLTER,GEISTGUN};
 byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -39,17 +39,12 @@ byte levelDifficulty;
 bool source=false;
 
 Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
-Timer deadTimer; //whent this runs out you los
-Timer laserTimer; //for kill animation
-Timer ghostFadeInTimer;
+Timer deadTimer; //whent this runs out you lose
 Timer gameTimer;
 Timer bossTimer;
-Timer empBurstTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
-byte highest;
-byte lowest;
 bool isDecrease=false;// for the ghost fade in
 byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
@@ -102,9 +97,12 @@ void loop() {
       case GHOUL:
         ghoulDisplay();
         break;
+      case POLTER:
+        polterDisplay();
+        break;
       case LIGHT:
         if(source){
-          setColor(makeColorHSB(lightHue,240,255));
+          setColor(makeColorHSB(lightHue,0,255));
         }else{
           lightDisplay();
         }
@@ -114,7 +112,7 @@ void loop() {
          break;
       case BEAM:
         if(source){
-          setColor(makeColorHSB(laserHue,240,255));
+          setColor(makeColorHSB(ghoulHue,240,255));
         }else{
           beamDisplay();
         }
@@ -126,26 +124,19 @@ void loop() {
           setColor(makeColorHSB(245,240,random(125)+130));
          }
          break;
+      case GEISTGUN:
+         if(source){
+          setColor(makeColorHSB(geistHue,230,255));
+         }else{
+          geistGunDisplay();
+         }
+         break;
       default:
         setColor(BLUE);
         break;
     }
   }else{
-    if(source){
-      switch(blinkType){
-        case EMP:
-          setColor(MAGENTA);
-          break;
-        case LIGHT:
-          setColor(makeColorHSB(laserHue,240,255));
-          break;
-        case BEAM:
-          setColor(makeColorHSB(laserHue,240,255));
-          break;
-      }
-    }else{
-      levelSelectDisplay();
-    }
+    levelSelectDisplay();
   }
 
 
@@ -154,7 +145,7 @@ void loop() {
     setValueSentOnAllFaces(sendData);
   }else{
     byte sendData = (blinkType<<2) + signalState;
-    if(blinkType==LIGHT || blinkType==BEAM || blinkType==EMP){
+    if(blinkType==LIGHT || blinkType==BEAM || blinkType==EMP || blinkType==GEISTGUN){
       if(source){
         setValueSentOnAllFaces(sendData);
       }else{
@@ -170,9 +161,10 @@ void loop() {
 void levelSelectLoop(){
 
 
-  //WEAPON MAKER
+  //WEAPON MAKER (that also cahnges you to play stage
   if(buttonLongPressed()){
       if(isAlone()){
+        signalState=GO;
         source=true;
         weaponType=1;
         weaponHandling();
@@ -204,7 +196,7 @@ void levelSelectLoop(){
 
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
-        if(getLevelDifficulty(getLastValueReceivedOnFace(f)) != 0){
+        if(getLevelDifficulty(getLastValueReceivedOnFace(f)) != 0 && getLevelDifficulty(getLastValueReceivedOnFace(f))<7){
           receivedLevelDifficulty = getLevelDifficulty(getLastValueReceivedOnFace(f));
           if(levelDifficulty==1 && receivedLevelDifficulty==6){
             levelDifficulty = 1;
@@ -258,8 +250,14 @@ void PLAYLoop() {
         if(isAlone()){
           source=true;
           weaponType++;
-          if(weaponType>3){
-             weaponType=1;
+          if(levelDifficulty>3){
+            if(weaponType>4){
+               weaponType=1;
+            }
+          }else{
+            if(weaponType>3){
+               weaponType=1;
+            }
           }
           weaponHandling();
         }
@@ -303,7 +301,7 @@ void PLAYLoop() {
     }
   }
 
-  //GHOST AND GHOUL SPAWNING
+  //GHOST AND GHOUL SPAWNING AND ALSO SOME POLTERGEISTS!
   if(blinkType==EMPTY){
     if(ghostWaitTimer.isExpired()){
       //check for neighborGhosts. dont spawn a ghost if neighbor is a ghosts 
@@ -311,17 +309,15 @@ void PLAYLoop() {
       ghoulOrGhost=(random(100)+random(100));
       if(noGhostNeighbors()){
         if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
-          if(ghoulOrGhost>=100){
-            deadTimer.set(DEAD_TIME);
-            highest=185;
-            lowest=140;
+          if(100<ghoulOrGhost){
             blinkType=GHOUL;
           }else{
-            deadTimer.set(DEAD_TIME);
-            highest=185;
-            lowest=140;
             blinkType=GHOST;
           }
+            deadTimer.set(DEAD_TIME);
+        }else if(randomHaunting<=POLTER_SPAWN_CHANCE){
+          blinkType=POLTER;
+          deadTimer.set(DEAD_TIME);
         }
       }
       ghostWaitTimer.set(GHOST_WAIT_TIME);
@@ -359,6 +355,19 @@ void PLAYLoop() {
       blinkType=EMPTY;
     }else if(isReceivingEmpBurst()){
       blinkType=EMPTY;
+    }
+  }
+
+  if(blinkType==POLTER){
+    if(isReceivingEmpBurst()){
+      blinkType==EMPTY;
+    }
+    FOREACH_FACE(f){
+      if(!isValueReceivedOnFaceExpired(f)){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==GEISTGUN){
+          blinkType=EMPTY;
+        }
+     }
     }
   }
 
@@ -423,6 +432,30 @@ void PLAYLoop() {
   }
   }
 
+  //GEIST GUN SENDING
+  if(blinkType==GEISTGUN && source==false){
+    if(!isValueReceivedOnFaceExpired(receivingFace)){
+      if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==GEISTGUN){
+        blinkType=GEISTGUN;
+      }else{
+        blinkType=EMPTY;
+      }
+    }else{
+      blinkType=EMPTY;
+    }
+  }else{
+    FOREACH_FACE(f){
+    if(!isValueReceivedOnFaceExpired(f)){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==GEISTGUN){
+          if(blinkType==EMPTY){
+            receivingFace=f;
+            blinkType=GEISTGUN;
+          }
+        }
+     }
+  }
+  }
+
  
   
   
@@ -463,27 +496,44 @@ void PLAYLoop() {
 //     GO LOOP transitions to PLAY
 //--------------------------
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//###############################################
+//       LEVEL DIFFICULTY MODIFIERS ARE HERE
+//###############################################
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void goLoop() {
   signalState = PLAY;
 
   switch(levelDifficulty){
-    case 1: //no bosses(goblins) and low spawn rate
+    case 1: // just ghosts and ghouls... classic
       BOSS_SPAWN_CHANCE=101;
       GHOST_GHOUL_SPAWN_CHANCE=80;
+      POLTER_SPAWN_CHANCE=0;
       DEAD_TIME=5000;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
       break;
-    case 2: 
+    case 2: //Ghosts ghouls and poltergeists.... oh boy
       BOSS_SPAWN_CHANCE=101;
-      GHOST_GHOUL_SPAWN_CHANCE=75;
-      DEAD_TIME=4000;
+      GHOST_GHOUL_SPAWN_CHANCE=80;
+      POLTER_SPAWN_CHANCE=15;
+      DEAD_TIME=5000;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
       break;
-    case 3:   //the og difficulty
+    case 3:   // ghosts ghouls and poltergeists, but harder
+      BOSS_SPAWN_CHANCE=101;
+      GHOST_GHOUL_SPAWN_CHANCE=80;
+      POLTER_SPAWN_CHANCE=20;
+      DEAD_TIME=4000;
+      GHOST_WAIT_TIME=2500;
+      ghostWaitTimer.set(3000);     
+      break;
+    case 4: //og difficulty plus poltergeists
       BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=80;
+      POLTER_SPAWN_CHANCE=20;
       BOSS_DEAD_TIME=4000;
       DEAD_TIME=3000;
       BOSS_TIME=3500;
@@ -491,19 +541,10 @@ void goLoop() {
       ghostWaitTimer.set(3000);     
       bossTimer.set(3500);
       break;
-    case 4: //little harderr
-      BOSS_SPAWN_CHANCE=90;
-      GHOST_GHOUL_SPAWN_CHANCE=80;
-      BOSS_DEAD_TIME=4000;
-      DEAD_TIME=3000;
-      BOSS_TIME=3100;
-      GHOST_WAIT_TIME=2500;
-      ghostWaitTimer.set(2500);     
-      bossTimer.set(3000);
-      break;
    case 5:                       //oh boy...
-      BOSS_SPAWN_CHANCE=90;
+      BOSS_SPAWN_CHANCE=85;
       GHOST_GHOUL_SPAWN_CHANCE=80;
+      POLTER_SPAWN_CHANCE=25;
       BOSS_DEAD_TIME=4000;
       DEAD_TIME=3000;
       BOSS_TIME=3100;
@@ -514,6 +555,7 @@ void goLoop() {
    case 6:                      //good luck :)
       BOSS_SPAWN_CHANCE=70;
       GHOST_GHOUL_SPAWN_CHANCE=70;
+      POLTER_SPAWN_CHANCE=25;
       BOSS_DEAD_TIME=4000;
       DEAD_TIME=3000;
       BOSS_TIME=3100;
@@ -525,7 +567,9 @@ void goLoop() {
 
   }
 
-  blinkType=EMPTY;
+  if(!source){
+    blinkType=EMPTY;
+  }
   gameTimer.set(SURVIVAL_TIME);
 
   //look for neighbors who have not heard the news
@@ -596,6 +640,7 @@ bool isReceivingLight(){
   }
 }
 
+
 bool isReceivingEmpBurst(){
   byte emp=0;
   FOREACH_FACE(f){
@@ -617,7 +662,7 @@ bool noGhostNeighbors(){
   byte ghosts=0;
   FOREACH_FACE(f){
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
-      if (getBlinkType(getLastValueReceivedOnFace(f)) == GHOST || getBlinkType(getLastValueReceivedOnFace(f)) == GHOUL || getBlinkType(getLastValueReceivedOnFace(f)) == BOSS){//This neighbor isn't in RESOLVE. Stay in RESOLVE
+      if (getBlinkType(getLastValueReceivedOnFace(f)) == GHOST || getBlinkType(getLastValueReceivedOnFace(f)) == GHOUL || getBlinkType(getLastValueReceivedOnFace(f)) == BOSS || getBlinkType(getLastValueReceivedOnFace(f)) == POLTER){//This neighbor isn't in RESOLVE. Stay in RESOLVE
         ghosts++;
       }
     }
@@ -629,34 +674,28 @@ bool noGhostNeighbors(){
   }
 }
 
+
 void breath(){
-  if(ghostFadeInTimer.isExpired()){
-    if(!isDecrease){
-      dimness+=10;
-    }else{
-      dimness-=10;
-    }
-    if(dimness>250){
-      dimness=250;
-      isDecrease=true;
-    }else if(dimness<180){
-      dimness=180;
-      isDecrease=false;
-    }
-    ghostFadeInTimer.set(GHOST_FADE_TIME);
-  }
+  byte breathProgress = map(millis()%PERIOD,0,PERIOD,0,255);
+  dimness = map(sin8_C(breathProgress),0,255,127,255);
 }
 
 void lightDisplay(){
-  setColor(makeColorHSB(lightHue,random(50)+190,random(70)+70));
-  setColorOnFace(makeColorHSB(lightHue,240,255),receivingFace);
-  setColorOnFace(makeColorHSB(lightHue,240,255),(receivingFace+3)%6);
+  setColor(makeColorHSB(lightHue,random(80),random(70)+70));
+  setColorOnFace(makeColorHSB(lightHue,0,255),receivingFace);
+  setColorOnFace(makeColorHSB(lightHue,0,255),(receivingFace+3)%6);
 }
 
 void beamDisplay(){
-  setColor(makeColorHSB(laserHue,random(50)+190,random(70)+70));
-  setColorOnFace(makeColorHSB(laserHue,240,255),receivingFace);
-  setColorOnFace(makeColorHSB(laserHue,240,255),(receivingFace+3)%6);
+  setColor(makeColorHSB(ghoulHue,random(50)+190,random(70)+70));
+  setColorOnFace(makeColorHSB(ghoulHue,240,255),receivingFace);
+  setColorOnFace(makeColorHSB(ghoulHue,240,255),(receivingFace+3)%6);
+}
+
+void geistGunDisplay(){
+  setColor(makeColorHSB(geistHue,random(50)+190,random(70)+70));
+  setColorOnFace(makeColorHSB(geistHue,240,255),receivingFace);
+  setColorOnFace(makeColorHSB(geistHue,240,255),(receivingFace+3)%6);
 }
         
 
@@ -668,7 +707,11 @@ void ghostDisplay(){
 void ghoulDisplay(){
   breath();
   setColor(makeColorHSB(ghoulHue,255,dimness));
-  
+}
+
+void polterDisplay(){
+  breath();
+  setColor(makeColorHSB(geistHue,255,dimness));
 }
 
 void bossDisplay(){
@@ -678,19 +721,12 @@ void bossDisplay(){
 
 void deadDisplay(){
   breath();
-  setColor(makeColorHSB(15,random(55)+200,dimness));
+  setColor(makeColorHSB(15,random(70)+170,dimness));
 }
 
 void winDisplay(){
-  if(ghostFadeInTimer.isExpired()){
-    byte maybeFlash=random(50);
-      if(maybeFlash>=25){
-        setColor(WHITE);
-      }else{
-      setColor(dim(WHITE,175));
-    }
-    ghostFadeInTimer.set(GHOST_FADE_TIME);
-  }
+     breath();
+     setColor(makeColorHSB(0,random(50),dimness));
 }
 
 //DISPLAY CURRENT LEVEL
@@ -712,6 +748,9 @@ void weaponHandling(){
       blinkType=BEAM;
       break;
     case 3:
+      blinkType=GEISTGUN;
+      break;
+    case 4:
       blinkType=EMP;
       break;
   }
