@@ -308,7 +308,7 @@ void PLAYLoop() {
             blinkType=GHOST;
           }
             deadTimer.set(DEAD_TIME);
-        }else if(randomHaunting<=POLTER_SPAWN_CHANCE){
+        }else if(randomHaunting<POLTER_SPAWN_CHANCE){
           blinkType=POLTER;
           deadTimer.set(DEAD_TIME);
         }
@@ -502,7 +502,7 @@ void goLoop() {
     case 1: // just ghosts and ghouls... classic
       BOSS_SPAWN_CHANCE=101;
       GHOST_GHOUL_SPAWN_CHANCE=80;
-      POLTER_SPAWN_CHANCE=-10;
+      POLTER_SPAWN_CHANCE=0;
       DEAD_TIME=5000;
       GHOST_WAIT_TIME=3000;
       ghostWaitTimer.set(3000);     
