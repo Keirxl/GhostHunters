@@ -519,19 +519,19 @@ void goLoop() {
       BOSS_SPAWN_CHANCE=101;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       POLTER_SPAWN_CHANCE=20;
-      DEAD_TIME=4000;
-      GHOST_WAIT_TIME=2500;
-      ghostWaitTimer.set(3000);     
+      DEAD_TIME=4500;
+      GHOST_WAIT_TIME=2000;
+      ghostWaitTimer.set(2000);     
       break;
     case 4: //og difficulty plus poltergeists
       BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=85;
-      POLTER_SPAWN_CHANCE=10;
+      POLTER_SPAWN_CHANCE=15;
       BOSS_DEAD_TIME=4000;
       DEAD_TIME=5000;
       BOSS_TIME=3500;
-      GHOST_WAIT_TIME=3000;
-      ghostWaitTimer.set(3000);     
+      GHOST_WAIT_TIME=2000;
+      ghostWaitTimer.set(2000);     
       bossTimer.set(3500);
       break;
    case 5:                       //oh boy...
