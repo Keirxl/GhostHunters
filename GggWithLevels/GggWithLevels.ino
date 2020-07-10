@@ -523,7 +523,7 @@ void goLoop() {
       GHOST_WAIT_TIME=2500;
       ghostWaitTimer.set(3000);     
       break;
-    case 4: //og difficulty plus poltergeists
+    case 4: //og difficulty
       BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=85;
       POLTER_SPAWN_CHANCE=10;
@@ -535,20 +535,20 @@ void goLoop() {
       bossTimer.set(3500);
       break;
    case 5:                       //oh boy...
-      BOSS_SPAWN_CHANCE=85;
+      BOSS_SPAWN_CHANCE=90;
       GHOST_GHOUL_SPAWN_CHANCE=80;
-      POLTER_SPAWN_CHANCE=25;
+      POLTER_SPAWN_CHANCE=15;
       BOSS_DEAD_TIME=4000;
-      DEAD_TIME=3000;
+      DEAD_TIME=4500;
       BOSS_TIME=3100;
       GHOST_WAIT_TIME=2500;
       ghostWaitTimer.set(2500);     
       bossTimer.set(3000);
       break;
    case 6:                      //good luck :)
-      BOSS_SPAWN_CHANCE=70;
+      BOSS_SPAWN_CHANCE=90;
       GHOST_GHOUL_SPAWN_CHANCE=70;
-      POLTER_SPAWN_CHANCE=25;
+      POLTER_SPAWN_CHANCE=20;
       BOSS_DEAD_TIME=4000;
       DEAD_TIME=3000;
       BOSS_TIME=3100;
@@ -563,7 +563,9 @@ void goLoop() {
   if(!source){
     blinkType=EMPTY;
   }
-  gameTimer.set(SURVIVAL_TIME);
+  if(levelDifficulty!=6){
+    gameTimer.set(SURVIVAL_TIME);
+  }
 
   //look for neighbors who have not heard the news
   FOREACH_FACE(f) {
