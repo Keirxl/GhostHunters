@@ -1,8 +1,8 @@
 //GhostHunters
-// Try to survive with a friend as your mansion is haunted
-// by Ghosts, Ghouls, and Goblins
-// With Levvels
 
+//    O              
+//    |-=<---------- 
+//   /\
 
 
 #define PALE makeColorHSB(200,60,60)
