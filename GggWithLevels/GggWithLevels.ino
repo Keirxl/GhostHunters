@@ -21,7 +21,6 @@ int BOSS_TIME;
 int GHOST_WAIT_TIME;
 
 //time to kill mobs
-int BOSS_DEAD_TIME;
 int DEAD_TIME;
 
 
@@ -243,24 +242,23 @@ void PLAYLoop() {
         weaponHandling();
       }
     }
+
+    //WHAT WEAPONS ARE AVAILABLE
+     
     if(source==true){
       if(buttonSingleClicked()){
           weaponType++;
-          if(levelDifficulty<2){
+          if(levelDifficulty<2 || levelDifficulty==4){
             if(weaponType>2){
                weaponType=1;
             }
-          }else if(levelDifficulty<4){
+          }else{
             if(weaponType>3){
                weaponType=1;
             }
-          }else{
-            if(weaponType>4){
-               weaponType=1;
-            }
           }
+          
           weaponHandling();
-        
       }
     }
   
@@ -324,7 +322,7 @@ void PLAYLoop() {
       randomHaunting=random(100);
       if(noGhostNeighbors()){
         if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
-          deadTimer.set(BOSS_DEAD_TIME);
+          deadTimer.set(DEAD_TIME);
           blinkType=BOSS;
         }
       }
@@ -454,7 +452,7 @@ void PLAYLoop() {
   
 
   //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
-  if(blinkType==GHOST || blinkType==GHOUL){
+  if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
     }
@@ -463,12 +461,7 @@ void PLAYLoop() {
     }
   }
 
-  //IF I DONT KILL THE BOSS FAST ENOUGH I DIE
-  if(blinkType==BOSS){
-    if(deadTimer.isExpired()){
-      blinkType=DEAD;
-    }
-  }
+  
   
 
   
@@ -523,11 +516,10 @@ void goLoop() {
       GHOST_WAIT_TIME=2000;
       ghostWaitTimer.set(2000);     
       break;
-    case 4: //og difficulty
+    case 4: //og difficulty (ghosts ghouls, goblins)
       BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=85;
-      POLTER_SPAWN_CHANCE=15;
-      BOSS_DEAD_TIME=4000;
+      POLTER_SPAWN_CHANCE=0;
       DEAD_TIME=5000;
       BOSS_TIME=3500;
       GHOST_WAIT_TIME=2000;
@@ -535,10 +527,9 @@ void goLoop() {
       bossTimer.set(3500);
       break;
    case 5:                       //oh boy...
-      BOSS_SPAWN_CHANCE=90;
+      BOSS_SPAWN_CHANCE=95;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       POLTER_SPAWN_CHANCE=15;
-      BOSS_DEAD_TIME=4000;
       DEAD_TIME=4500;
       BOSS_TIME=3100;
       GHOST_WAIT_TIME=2500;
@@ -547,9 +538,8 @@ void goLoop() {
       break;
    case 6:                      //good luck :)
       BOSS_SPAWN_CHANCE=90;
-      GHOST_GHOUL_SPAWN_CHANCE=70;
+      GHOST_GHOUL_SPAWN_CHANCE=75;
       POLTER_SPAWN_CHANCE=20;
-      BOSS_DEAD_TIME=4000;
       DEAD_TIME=3000;
       BOSS_TIME=3100;
       GHOST_WAIT_TIME=2500;
@@ -743,9 +733,6 @@ void weaponHandling(){
       break;
     case 3:
       blinkType=GEISTGUN;
-      break;
-    case 4:
-      blinkType=EMP;
       break;
   }
   
