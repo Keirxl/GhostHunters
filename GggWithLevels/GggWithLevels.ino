@@ -661,7 +661,8 @@ bool noGhostNeighbors(){
 
 void breath(){
   byte breathProgress = map(millis()%PERIOD,0,PERIOD,0,255);
-  dimness = map(sin8_C(breathProgress),0,255,127,255);
+  //dimness = map(sin8_C(breathProgress),0,255,127,255);
+  dimness = (sin8_C(breathProgress)/2)+127;
 }
 
 void lightDisplay(){
