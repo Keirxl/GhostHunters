@@ -223,11 +223,13 @@ void PLAYLoop() {
   
   //set myself to LEVELSELECT
   if (buttonMultiClicked()) {
-    byte clicks=buttonClickCount();
-    if(clicks==3){
-      blinkType=WIN;
-      signalState = RESOLVE;
-      levelDifficulty=1;
+    if(!source){
+      byte clicks=buttonClickCount();
+      if(clicks==3){
+        blinkType=WIN;
+        signalState = RESOLVE;
+        levelDifficulty=1;
+      }
     }
   }
   
@@ -237,16 +239,22 @@ void PLAYLoop() {
 
     if(buttonLongPressed()){
       if(isAlone()){
-        source=true;
-        weaponType=1;
-        weaponHandling();
+        source=!source;
+        if(source==false){
+          blinkType=WIN;
+          signalState=RESOLVE;
+          levelDifficulty=1;
+        }else{
+          weaponType=1;
+          weaponHandling();
+        }
       }
     }
 
     //WHAT WEAPONS ARE AVAILABLE
      
     if(source==true){
-      if(buttonSingleClicked()){
+      if(buttonPressed()){
           weaponType++;
           if(levelDifficulty<2 || levelDifficulty==4){
             if(weaponType>2){
