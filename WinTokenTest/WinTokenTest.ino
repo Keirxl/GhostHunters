@@ -46,6 +46,8 @@ byte receivedLevelDifficulty;
 byte weaponType=1;
 byte winTokenFace;
 
+bool winChance=false;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -261,8 +263,12 @@ void PLAYLoop() {
   
 //WIN CONDITION
   if(gameTimer.isExpired()){
-    if(blinkType!=DEAD && source==false){
-      blinkType=WIN;
+    if(levelDifficulty!=6){
+      if(blinkType!=DEAD && source==false){
+        blinkType=WIN;
+      }
+    }else{
+      winChance=true;
     }
   }
 
@@ -329,13 +335,15 @@ void PLAYLoop() {
 
 //Spawning WINTOKENS
  if(blinkType==EMPTY){
-  if(winTokenTimer.isExpired()){
-    byte isWintoken=random(100);
-    if(isWintoken>85){
-      blinkType=WINTOKEN;
-      winTokenFace=0;
+  if(levelDifficulty==6){
+    if(winTokenTimer.isExpired()){
+      byte isWintoken=random(100);
+      if(isWintoken>95){
+        blinkType=WINTOKEN;
+        winTokenFace=0;
+      }
+      winTokenTimer.set(5000);
     }
-    winTokenTimer.set(5000);
   }
  }
 
@@ -538,18 +546,20 @@ void goLoop() {
       POLTER_SPAWN_CHANCE=15;  
       break;
    case 6:                      //good luck :)
-      BOSS_SPAWN_CHANCE=90;
-      GHOST_GHOUL_SPAWN_CHANCE=75;
-      POLTER_SPAWN_CHANCE=20;  
+      BOSS_SPAWN_CHANCE=95;
+      GHOST_GHOUL_SPAWN_CHANCE=76;
+      POLTER_SPAWN_CHANCE=17;  
       break;
   }
 
   if(!source){
     blinkType=EMPTY;
   }
-  if(levelDifficulty!=6){
-    gameTimer.set(SURVIVAL_TIME);
-  }
+  
+  gameTimer.set(SURVIVAL_TIME);
+
+  winChance=false;
+  
 
   //look for neighbors who have not heard the news
   FOREACH_FACE(f) {
