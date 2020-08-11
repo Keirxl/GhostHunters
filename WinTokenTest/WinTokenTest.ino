@@ -5,7 +5,7 @@
 #define geistHue 135
 #define bossHue 75
 #define ghoulHue 8
-#define DEAD_TIME 50000
+#define DEAD_TIME 4500
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -23,7 +23,7 @@ int GHOST_WAIT_TIME;
 #define SURVIVAL_TIME 50000 //one minute
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,EMP,BOSS,POLTER,GEISTGUN};
+enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,EMP,BOSS,POLTER,GEISTGUN,WINTOKEN};
 byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -35,6 +35,8 @@ Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you lose
 Timer gameTimer;
 Timer bossTimer;
+Timer winTokenFaceTimer;
+Timer winTokenTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
@@ -42,6 +44,8 @@ byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
 byte weaponType=1;
+byte winTokenFace;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -70,6 +74,9 @@ void loop() {
 
   if(signalState!= LEVELSELECT){
     switch(blinkType){
+      case WINTOKEN:
+        winTokenDisplay();
+        break;
       case WIN:
         winDisplay();
         break;
@@ -120,7 +127,9 @@ void loop() {
   }else{
     levelSelectDisplay();
   }
-
+//_____________________
+//SEND DATA HERE       ++++++
+//_____________________
 
   if(signalState==LEVELSELECT){
     byte sendData = (levelDifficulty<<2) + signalState;
@@ -262,7 +271,7 @@ void PLAYLoop() {
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==WIN){
-          blinkType==WIN;
+          blinkType=WIN;
         }
       }
     }
@@ -282,6 +291,7 @@ void PLAYLoop() {
   }
 
   //GHOST AND GHOUL SPAWNING AND ALSO SOME POLTERGEISTS!
+  
   if(blinkType==EMPTY){
     if(ghostWaitTimer.isExpired()){
       //check for neighborGhosts. dont spawn a ghost if neighbor is a ghosts 
@@ -316,6 +326,32 @@ void PLAYLoop() {
       //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
   }
+
+//Spawning WINTOKENS
+ if(blinkType==EMPTY){
+  if(winTokenTimer.isExpired()){
+    byte isWintoken=random(100);
+    if(isWintoken>85){
+      blinkType=WINTOKEN;
+      winTokenFace=0;
+    }
+    winTokenTimer.set(5000);
+  }
+ }
+
+ if(blinkType==WINTOKEN){
+  FOREACH_FACE(f){
+    if(!isValueReceivedOnFaceExpired(f)){
+      if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
+        if(f==winTokenFace%6){
+          blinkType=WIN;
+        }else{
+          blinkType=EMPTY;
+        }
+      }
+    }
+  }
+ }
 
   
 //----------------
@@ -674,6 +710,15 @@ void weaponHandling(){
       break;
   }
   
+}
+
+void winTokenDisplay(){
+  if(winTokenFaceTimer.isExpired()){
+    winTokenFace++;
+    winTokenFaceTimer.set(1000);
+  }
+  setColor(OFF);
+  setColorOnFace(YELLOW,winTokenFace%6);
 }
 
 
