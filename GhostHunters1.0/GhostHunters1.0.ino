@@ -5,7 +5,7 @@
 #define geistHue 135
 #define bossHue 75
 #define ghoulHue 8
-#define DEAD_TIME 50000
+#define DEAD_TIME 4500
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -262,7 +262,7 @@ void PLAYLoop() {
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==WIN){
-          blinkType==WIN;
+          blinkType=WIN;
         }
       }
     }
