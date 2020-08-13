@@ -2,10 +2,10 @@
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
-#define geistHue 135
+#define geistHue 160
 #define bossHue 75
 #define ghoulHue 8
-#define DEAD_TIME 4500
+#define DEAD_TIME 4000
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -117,7 +117,7 @@ void loop() {
         break;
       case GEISTGUN:
          if(source){
-          setColor(makeColorHSB(geistHue,230,255));
+          setColor(makeColorHSB(geistHue,255,255));
          }else{
           geistGunDisplay();
          }
@@ -273,7 +273,7 @@ void PLAYLoop() {
   }
 
 
-  if(blinkType!=DEAD){
+  if(blinkType!=DEAD && !source){
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==WIN){
@@ -334,18 +334,20 @@ void PLAYLoop() {
   }
 
 //Spawning WINTOKENS
- if(blinkType==EMPTY){
   if(levelDifficulty==6){
-    if(winTokenTimer.isExpired()){
-      byte isWintoken=random(100);
-      if(isWintoken>95){
-        blinkType=WINTOKEN;
-        winTokenFace=0;
+    if(winChance){
+     if(blinkType==EMPTY){
+      if(winTokenTimer.isExpired()){
+        byte isWintoken=random(100);
+        if(isWintoken>99){
+          blinkType=WINTOKEN;
+          winTokenFace=0;
+        }
+        winTokenTimer.set(5000);
       }
-      winTokenTimer.set(5000);
     }
+   }
   }
- }
 
  if(blinkType==WINTOKEN){
   FOREACH_FACE(f){
