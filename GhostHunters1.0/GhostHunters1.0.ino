@@ -143,7 +143,7 @@ void loop() {
 void levelSelectLoop(){
 
   //WEAPON MAKER (that also cahnges you to play stage
-  if(buttonLongPressed()){
+  if(buttonDoubleClicked()){
       if(isAlone()){
         signalState=GO;
         source=true;
