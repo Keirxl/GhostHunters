@@ -1,4 +1,4 @@
-//GhostHunters
+//Ghost
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
