@@ -13,9 +13,6 @@ byte BOSS_SPAWN_CHANCE;   //95 seems good
 byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
 byte POLTER_SPAWN_CHANCE;
 
-//time to kill mobs
-//int DEAD_TIME;
-
 #define PERIOD 2000
 #define SURVIVAL_TIME 50000 //one minute
 
@@ -194,21 +191,19 @@ void PLAYLoop() {
   
   //set myself to LEVELSELECT
   if (buttonMultiClicked()) {
-    if(!source){
       byte clicks=buttonClickCount();
       if(clicks==3){
         blinkType=WIN;
         signalState = RESOLVE;
         levelDifficulty=1;
       }
-    }
   }
   
 //------------------------------------
 //   FLASHLIGHT AND LASER HANDLING
 //------------------------------------
 
-    if(buttonLongPressed()){
+    if(buttonDoubleClicked()){
       if(isAlone()){
         source=!source;
         if(source==false){
@@ -397,9 +392,6 @@ void PLAYLoop() {
   if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
-    }
-    if(buttonDoubleClicked()){
-      blinkType=EMPTY;
     }
   }
 
