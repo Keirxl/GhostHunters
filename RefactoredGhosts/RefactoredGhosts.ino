@@ -84,7 +84,7 @@ void levelSelectLoop(){
 
   if(buttonDoubleClicked()){
     state=PLAY;
-    isBeam=!isBeam;
+    isBeam=true;
     FOREACH_FACE(f){
       faceBlinkType[f]=BEAM;
       faceBeamType[f]=1;
@@ -165,12 +165,16 @@ void playLoop(){
             faceBlinkType[(f+3)%6]=BEAM;
             faceBeamType[f]=getBeamType(getLastValueReceivedOnFace(f));
             faceBeamType[(f+3)%6]=getBeamType(getLastValueReceivedOnFace(f));
+          }else{
+            faceBlinkType[f]=BOARD;
+            faceBlinkType[(f+3)%6]=BOARD;
           }
         }
       }
   }
 
   //LISTEN FOR OTHERS IN SELECT STAGE
+  /*
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getState(getLastValueReceivedOnFace(f))==PLAY){
@@ -183,6 +187,7 @@ void playLoop(){
         }
       }
     }
+    */
 }
 
 void resultsLoop(){
