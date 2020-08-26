@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 //1.1
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
@@ -7,14 +8,31 @@
 #define DEAD_TIME 50000
 #define GHOST_WAIT_TIME 2000
 #define BOSS_TIME 3000
+=======
+//1.1.2
+#define PALE makeColorHSB(200,60,60)
+#define lightHue 230
+#define geistHue 135
+#define bossHue 75
+#define ghoulHue 8
+#define DEAD_TIME 5000
+#define GHOST_WAIT_TIME 2000
+#define BOSS_TIME 3000
+#define PERIOD 2000
+#define SURVIVAL_TIME 50000 //one minute
+>>>>>>> Stashed changes
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
 byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
 byte POLTER_SPAWN_CHANCE;
 
+<<<<<<< Updated upstream
 #define PERIOD 2000
 #define SURVIVAL_TIME 50000 //one minute
+=======
+
+>>>>>>> Stashed changes
 
 // A B C D E F
 enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,EMP,BOSS,POLTER,GEISTGUN};
@@ -35,6 +53,11 @@ byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
 byte weaponType=1;
+<<<<<<< Updated upstream
+=======
+byte badBoiType;
+byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
+>>>>>>> Stashed changes
 
 void setup() {
   // put your setup code here, to run once:
@@ -63,14 +86,18 @@ void loop() {
       case WIN:
         winDisplay();
         break;
+<<<<<<< Updated upstream
       case BOSS:
         setColorOnFace(makeColorHSB(bossHue,245,random(65)+190),random(5));
         break;
+=======
+>>>>>>> Stashed changes
       case EMPTY:
         setColor(PALE);
         //bossAura();
         break;
       case GHOST:
+<<<<<<< Updated upstream
         ghostDisplay();
         break;
       case GHOUL:
@@ -85,6 +112,15 @@ void loop() {
         }else{
           lightDisplay();
         }
+=======
+      case GHOUL:
+      case POLTER:
+      case BOSS:
+        badBoiDisplay();
+        break;
+      case LIGHT:       
+        lightDisplay();
+>>>>>>> Stashed changes
         break;
       case DEAD:
          deadDisplay();
@@ -188,15 +224,27 @@ void levelSelectLoop(){
 }
 
 void PLAYLoop() {
+<<<<<<< Updated upstream
   
   //set myself to LEVELSELECT
   if (buttonMultiClicked()) {
+=======
+
+  
+  //set myself to LEVELSELECT
+  if (buttonMultiClicked()) {
+    if(!source){
+>>>>>>> Stashed changes
       byte clicks=buttonClickCount();
       if(clicks==3){
         blinkType=WIN;
         signalState = RESOLVE;
         levelDifficulty=1;
       }
+<<<<<<< Updated upstream
+=======
+    }
+>>>>>>> Stashed changes
   }
   
 //------------------------------------
@@ -275,13 +323,25 @@ void PLAYLoop() {
         if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
           if(55<ghoulOrGhost){
             blinkType=GHOUL;
+<<<<<<< Updated upstream
           }else{
             blinkType=GHOST;
+=======
+            badBoiType=1;
+            deadTimer.set(DEAD_TIME);
+          }else{
+            blinkType=GHOST;
+            badBoiType=0;
+>>>>>>> Stashed changes
           }
             deadTimer.set(DEAD_TIME);
         }else if(randomHaunting<POLTER_SPAWN_CHANCE){
           blinkType=POLTER;
           deadTimer.set(DEAD_TIME);
+<<<<<<< Updated upstream
+=======
+          badBoiType=2;
+>>>>>>> Stashed changes
         }
       
       ghostWaitTimer.set(GHOST_WAIT_TIME);
@@ -293,6 +353,10 @@ void PLAYLoop() {
         if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
           deadTimer.set(DEAD_TIME);
           blinkType=BOSS;
+<<<<<<< Updated upstream
+=======
+          badBoiType=3;
+>>>>>>> Stashed changes
         }
       
       bossTimer.set(BOSS_TIME);
@@ -531,7 +595,11 @@ void breath(){
 }
 
 void lightDisplay(){
+<<<<<<< Updated upstream
   setColor(makeColorHSB(lightHue,0,255));
+=======
+  setColor(makeColorHSB(lightHue,255,255));
+>>>>>>> Stashed changes
 }
 
 void beamDisplay(){
@@ -544,6 +612,7 @@ void geistGunDisplay(){
   setColor(makeColorHSB(geistHue,random(50)+190,random(70)+70));
 }
         
+<<<<<<< Updated upstream
 
 void ghostDisplay(){
   breath();
@@ -560,6 +629,8 @@ void polterDisplay(){
   setColor(makeColorHSB(geistHue,255,dimness));
 }
 
+=======
+>>>>>>> Stashed changes
 void deadDisplay(){
   breath();
   setColor(makeColorHSB(15,random(70)+170,dimness));
@@ -570,6 +641,21 @@ void winDisplay(){
      setColor(makeColorHSB(45,random(70)+170,dimness));
 }
 
+<<<<<<< Updated upstream
+=======
+void badBoiDisplay(){
+  breath();
+  byte badFaces=map(deadTimer.getRemaining(),0,DEAD_TIME,0,5);
+  setColor(makeColorHSB(badBoiHue[badBoiType],255,dimness));
+  
+  FOREACH_FACE(f){
+    if(f>badFaces){
+      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],255,dimness-115),f);
+    }
+  }
+}
+
+>>>>>>> Stashed changes
 //DISPLAY CURRENT LEVEL
 void levelSelectDisplay(){
   setColor(PALE);
