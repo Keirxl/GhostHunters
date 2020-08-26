@@ -67,6 +67,8 @@ void loop() {
         setColor(PALE);
       }else if(faceBlinkType[f]==BEAM){
         beamsDisplay(faceBeamType[f]);
+      }else if(faceBlinkType[f]==LIGHT){
+        beamsDisplay(faceBeamType[f]);
       }
     }
   }
@@ -129,7 +131,7 @@ void playLoop(){
     state=PLAY;
     isBeam=!isBeam;
     FOREACH_FACE(f){
-      faceBlinkType[f]=BEAM;
+      faceBlinkType[f]=LIGHT;
       faceBeamType[f]=1;
     }
   }
@@ -160,15 +162,18 @@ void playLoop(){
    FOREACH_FACE(f){
       if(faceBlinkType[f]==BOARD){
         if(!isValueReceivedOnFaceExpired(f)){
-          if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
+          if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
             faceBlinkType[f]=BEAM;
             faceBlinkType[(f+3)%6]=BEAM;
             faceBeamType[f]=getBeamType(getLastValueReceivedOnFace(f));
             faceBeamType[(f+3)%6]=getBeamType(getLastValueReceivedOnFace(f));
-          }else{
-            faceBlinkType[f]=BOARD;
-            faceBlinkType[(f+3)%6]=BOARD;
           }
+        }
+      }else if(faceBlinkType[f]==BEAM){
+        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM || getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
+          faceBlinkType[f]=BEAM;
+        }else{
+          faceBlinkType[f]=BOARD;
         }
       }
   }
