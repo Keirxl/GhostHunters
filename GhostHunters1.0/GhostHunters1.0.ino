@@ -1,20 +1,18 @@
-//GhostHunters
+//GhostHunter
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 45
 #define geistHue 135
 #define bossHue 75
 #define ghoulHue 8
-#define DEAD_TIME 4500
+#define DEAD_TIME 50000
+#define GHOST_WAIT_TIME 2000
+#define BOSS_TIME 3000
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
 byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
 byte POLTER_SPAWN_CHANCE;
-
-//Timing of Spawns
-int BOSS_TIME;
-int GHOST_WAIT_TIME;
 
 //time to kill mobs
 //int DEAD_TIME;
@@ -29,7 +27,6 @@ enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
 byte levelDifficulty;
 bool source=false;
-
 
 Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you lose
@@ -47,12 +44,9 @@ void setup() {
   // put your setup code here, to run once:
   randomize();
   levelDifficulty=1;
-  ghostWaitTimer.set(GHOST_WAIT_TIME);
-  gameTimer.set(SURVIVAL_TIME);
 }
 
 void loop() {
-  
    switch (signalState) {
     case LEVELSELECT:
       levelSelectLoop();
@@ -121,7 +115,6 @@ void loop() {
     levelSelectDisplay();
   }
 
-
   if(signalState==LEVELSELECT){
     byte sendData = (levelDifficulty<<2) + signalState;
     setValueSentOnAllFaces(sendData);
@@ -137,7 +130,6 @@ void loop() {
       setValueSentOnAllFaces(sendData);
     }
   }
- 
 }
 
 void levelSelectLoop(){
@@ -217,7 +209,9 @@ void PLAYLoop() {
 //   FLASHLIGHT AND LASER HANDLING
 //------------------------------------
 
-    if(buttonLongPressed()){
+
+
+    if(buttonDoubleClicked()){
       if(isAlone()){
         source=!source;
         if(source==false){
@@ -257,12 +251,11 @@ void PLAYLoop() {
     }
   }
 
-
   if(blinkType!=DEAD){
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
         if(getBlinkType(getLastValueReceivedOnFace(f))==WIN){
-          blinkType=WIN;
+          blinkType==WIN;
         }
       }
     }
@@ -316,7 +309,6 @@ void PLAYLoop() {
       //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
   }
-
   
 //----------------
 //   KILLING MOBS 
@@ -349,7 +341,6 @@ void PLAYLoop() {
     }
   }
 
- 
 //-----------------------------------------
 // Super Clunky Signal Sending Chunk (SCSC)
 //-----------------------------------------
@@ -426,25 +417,12 @@ void PLAYLoop() {
   }
   }
 
- 
-  
-  
-
   //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
   if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
     }
-    if(buttonDoubleClicked()){
-      blinkType=EMPTY;
-    }
   }
-
-  
-  
-
-  
-
 
   //listen for neighbors in resolve
   FOREACH_FACE(f) {
@@ -461,7 +439,6 @@ void PLAYLoop() {
 //     GO LOOP transitions to PLAY
 //--------------------------
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //###############################################
 //       LEVEL DIFFICULTY MODIFIERS ARE HERE
@@ -470,8 +447,6 @@ void PLAYLoop() {
 void goLoop() {
   signalState = PLAY;
   
-  GHOST_WAIT_TIME=2000;
-  BOSS_TIME=3000;
   bossTimer.set(BOSS_TIME);
   ghostWaitTimer.set(GHOST_WAIT_TIME); 
   
@@ -535,8 +510,6 @@ void resolveLoop() {
   blinkType=EMPTY;
   source=false;
 
-  
-  
   //look for neighbors who have not moved to RESOLVE
   FOREACH_FACE(f) {
     if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
@@ -545,7 +518,6 @@ void resolveLoop() {
       }
     }
   }
-
 }
 
 //For lasers
@@ -582,7 +554,6 @@ bool isReceivingLight(){
   }
 }
 
-
 //returns true if there are no ghosts nearby
 bool noGhostNeighbors(){
   byte ghosts=0;
@@ -599,7 +570,6 @@ bool noGhostNeighbors(){
     return false;
   }
 }
-
 
 void breath(){
   byte breathProgress = map(millis()%PERIOD,0,PERIOD,0,255);
@@ -673,11 +643,7 @@ void weaponHandling(){
       blinkType=GEISTGUN;
       break;
   }
-  
 }
-
-
-
 
 byte getBlinkType(byte data){
   return (data>>2);
