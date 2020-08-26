@@ -1,23 +1,6 @@
 //l
 #define PALE makeColorHSB(200,60,60)
 byte beamColors[3]={45,135,8};
-<<<<<<< Updated upstream
-
-//ABCDEF
-enum state {SELECT,PLAY,RESULTS}; //AB
-byte state=SELECT;
-enum blinkType {BOARD,LIGHT,BEAM}; //CD
-byte blinkType=BOARD;
-byte beamType=1; //EF //light,geist,laser
-byte levelDifficulty=1; //DEF in level select state
-byte receivedLevelDifficulty;
-
-byte sendData;
-byte recievingFace;
-
-//face data
-byte faceData[6]={BOARD,BOARD,BOARD,BOARD,BOARD,BOARD};
-=======
 byte beamSwitch=1;
 
 //ABCDEF
@@ -36,16 +19,12 @@ byte recievingFace;
 
 
 
->>>>>>> Stashed changes
 
 void setup() {
   // put your setup code here, to run once:
   randomize();
   levelDifficulty=1;
-<<<<<<< Updated upstream
-=======
-  state=SELECT;
->>>>>>> Stashed changes
+  state=PLAY;
 }
 
 void loop() {
@@ -65,25 +44,14 @@ void loop() {
   //SENDING DATA
   
   if(state==SELECT){
-<<<<<<< Updated upstream
-     sendData= (state<<4) + levelDifficulty;
-  }else{
-     sendData= (state<<4) + (blinkType<<2) + beamType;
-  }
-  setValueSentOnAllFaces(sendData);
-
-  //DISPLAYING
-  switch(blinkType){
-    case BEAM:
-      beamsDisplay(beamType);
-      break;
-=======
+                //{ab}cdef    //ab{cdef}
      sendData = (state<<4) + levelDifficulty;
      setValueSentOnAllFaces(sendData);
   }else{
     FOREACH_FACE(f){
+                 //{ab}cdef    //ab{cd}ef             //abcd{ef}
       sendData = (state<<4) + (faceBlinkType[f]<<2)+(faceBeamType[f]);
-      setValueSentOnFace(f,sendData);
+      setValueSentOnFace(sendData,f);
     }
   }
   
@@ -101,7 +69,6 @@ void loop() {
         beamsDisplay(faceBeamType[f]);
       }
     }
->>>>>>> Stashed changes
   }
   
 }
@@ -117,18 +84,6 @@ void levelSelectLoop(){
 
   if(buttonDoubleClicked()){
     state=PLAY;
-<<<<<<< Updated upstream
-    blinkType=BEAM;
-    beamType=1;
-  }
-
-  if(blinkType==BEAM){
-    if(buttonPressed()){
-      beamType++;
-      if(beamType>3){
-        beamType=1;
-      }
-=======
     isBeam=!isBeam;
     FOREACH_FACE(f){
       faceBlinkType[f]=BEAM;
@@ -140,7 +95,6 @@ void levelSelectLoop(){
     levelDifficulty++;
     if(levelDifficulty>6){
       levelDifficulty=1;
->>>>>>> Stashed changes
     }
   }
   
@@ -170,20 +124,15 @@ void levelSelectLoop(){
 }
 
 void playLoop(){
-<<<<<<< Updated upstream
-  
-  if(blinkType==BOARD){
+
+  if(buttonDoubleClicked()){
+    state=PLAY;
+    isBeam=!isBeam;
     FOREACH_FACE(f){
-      if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
-          recievingFace=f;
-          blinkType=BEAM;
-          beamType=getBeamType(getLastValueReceivedOnFace(f));
-        }
-      }
+      faceBlinkType[f]=BEAM;
+      faceBeamType[f]=1;
     }
   }
-=======
 
   if(isBeam){
     if(buttonSingleClicked()){
@@ -208,7 +157,7 @@ void playLoop(){
     }
   }
   
-    FOREACH_FACE(f){
+   FOREACH_FACE(f){
       if(faceBlinkType[f]==BOARD){
         if(!isValueReceivedOnFaceExpired(f)){
           if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
@@ -234,7 +183,6 @@ void playLoop(){
         }
       }
     }
->>>>>>> Stashed changes
 }
 
 void resultsLoop(){
@@ -250,21 +198,18 @@ void levelSelectDisplay(){
   }
 }
 
-<<<<<<< Updated upstream
-=======
 void resultsDisplay(){
   setColor(BLUE);
 }
 
->>>>>>> Stashed changes
 void beamsDisplay(byte beamColor){
   setColor(makeColorHSB(beamColors[beamColor],240,255));
 }
 
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
+//{ab}cdef    //ab{cd}ef             //abcd{ef}
+//state       blinkType             beamType
+
 byte getBlinkType(byte data){
   return (data>>2 & 3);
 }
@@ -278,9 +223,5 @@ byte getBeamType(byte data){
 }
 
 byte getLevelDifficulty(byte data){
-<<<<<<< Updated upstream
-  return (data&15);
-=======
   return (data&7);
->>>>>>> Stashed changes
 }
