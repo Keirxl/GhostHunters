@@ -66,9 +66,7 @@ void loop() {
       if(faceBlinkType[f]==BOARD){
         setColor(PALE);
       }else if(faceBlinkType[f]==BEAM){
-        beamsDisplay(faceBeamType[f]);
-      }else if(faceBlinkType[f]==LIGHT){
-        beamsDisplay(faceBeamType[f]);
+        setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]],240,255),f);
       }
     }
   }
@@ -129,9 +127,9 @@ void playLoop(){
 
   if(buttonDoubleClicked()){
     state=PLAY;
-    isBeam=!isBeam;
+    isBeam=true;;
     FOREACH_FACE(f){
-      faceBlinkType[f]=LIGHT;
+      faceBlinkType[f]=BEAM;
       faceBeamType[f]=1;
     }
   }
@@ -160,23 +158,23 @@ void playLoop(){
   }
   
    FOREACH_FACE(f){
-      if(faceBlinkType[f]==BOARD){
+      if(faceBlinkType[f]==BOARD || faceBlinkType[f]==BEAM && isBeam==false){
         if(!isValueReceivedOnFaceExpired(f)){
-          if(getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
+          if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM){
             faceBlinkType[f]=BEAM;
             faceBlinkType[(f+3)%6]=BEAM;
             faceBeamType[f]=getBeamType(getLastValueReceivedOnFace(f));
             faceBeamType[(f+3)%6]=getBeamType(getLastValueReceivedOnFace(f));
+            setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]],240,255),f);
+            setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]],240,255),(f+3)%6);
+          }else{
+            FOREACH_FACE(f){
+              faceBlinkType[f]=BOARD;
+            }
           }
         }
-      }else if(faceBlinkType[f]==BEAM){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==BEAM || getBlinkType(getLastValueReceivedOnFace(f))==LIGHT){
-          faceBlinkType[f]=BEAM;
-        }else{
-          faceBlinkType[f]=BOARD;
-        }
       }
-  }
+    }
 
   //LISTEN FOR OTHERS IN SELECT STAGE
   /*
@@ -212,9 +210,6 @@ void resultsDisplay(){
   setColor(BLUE);
 }
 
-void beamsDisplay(byte beamColor){
-  setColor(makeColorHSB(beamColors[beamColor],240,255));
-}
 
 
 //{ab}cdef    //ab{cd}ef             //abcd{ef}
