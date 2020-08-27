@@ -22,6 +22,7 @@ enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
 byte levelDifficulty;
 bool source=false;
+byte sendData;
 
 Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you lose
@@ -94,10 +95,10 @@ void loop() {
   }
 
   if(signalState==LEVELSELECT){
-    byte sendData = (levelDifficulty<<2) + signalState;
+    sendData = (levelDifficulty<<2) + signalState;
     setValueSentOnAllFaces(sendData);
   }else{
-    byte sendData = (blinkType<<2) + signalState;
+    sendData = (blinkType<<2) + signalState;
     if(blinkType==LIGHT || blinkType==BEAM || blinkType==GEISTGUN){
       if(source){
         setValueSentOnAllFaces(sendData);
@@ -108,6 +109,9 @@ void loop() {
       setValueSentOnAllFaces(sendData);
     }
   }
+
+
+ 
 }
 
 void levelSelectLoop(){
