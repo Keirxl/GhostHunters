@@ -146,14 +146,16 @@ void levelSelectLoop(){
 
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
-        if(getLevelDifficulty(getLastValueReceivedOnFace(f)) != 0 && getLevelDifficulty(getLastValueReceivedOnFace(f))<7){
-          receivedLevelDifficulty = getLevelDifficulty(getLastValueReceivedOnFace(f));
-          if(levelDifficulty==1 && receivedLevelDifficulty==6){
-            levelDifficulty = 1;
-          }else if(levelDifficulty!=6 && levelDifficulty < receivedLevelDifficulty){
-            levelDifficulty = receivedLevelDifficulty;
-          }else if(levelDifficulty==6 && receivedLevelDifficulty==1){
-            levelDifficulty=1;
+        if(getSignalState(getLastValueReceivedOnFace(f))==LEVELSELECT){
+          if(getLevelDifficulty(getLastValueReceivedOnFace(f)) != 0 && getLevelDifficulty(getLastValueReceivedOnFace(f))<7){
+            receivedLevelDifficulty = getLevelDifficulty(getLastValueReceivedOnFace(f));
+            if(levelDifficulty==1 && receivedLevelDifficulty==6){
+              levelDifficulty = 1;
+            }else if(levelDifficulty!=6 && levelDifficulty < receivedLevelDifficulty){
+              levelDifficulty = receivedLevelDifficulty;
+            }else if(levelDifficulty==6 && receivedLevelDifficulty==1){
+              levelDifficulty=1;
+            }
           }
         }
       }
