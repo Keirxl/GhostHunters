@@ -64,7 +64,7 @@ void loop() {
   }else{
     FOREACH_FACE(f){
       if(faceBlinkType[f]==BOARD){
-        setColor(PALE);
+        setColorOnFace(PALE,f);
       }else if(faceBlinkType[f]==BEAM){
         setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]],240,255),f);
       }
