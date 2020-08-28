@@ -536,7 +536,7 @@ void beamDisplay(){
 }
 
 void geistGunDisplay(){
-  setColor(makeColorHSB(geistHue,random(50)+190,random(70)+70));
+  setColor(makeColorHSB(geistHue,random(50)+190,random(65)+190));
 }
 
 
@@ -558,7 +558,7 @@ void badBoiDisplay(){
   
   FOREACH_FACE(f){
     if(f>badFaces){
-      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],255,dimness-115),f);
+      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],255,dimness-130),f);
     }
   }
 }
