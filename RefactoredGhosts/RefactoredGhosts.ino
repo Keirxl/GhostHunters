@@ -1,7 +1,11 @@
-//l
+
 #define PALE makeColorHSB(200,60,60)
+#define DEAD_TIME 4500
+
 byte beamColors[3] = {45, 135, 8};
 byte beamSwitch = 1;
+byte mobColors[4]={230,8,135,75};
+byte mobType=0; //1=ghosts 2=ghouls 3=polters 4=goblins
 
 //ABCDEF
 enum state {SELECT, PLAY, RESULTS}; //AB
@@ -15,7 +19,9 @@ byte receivedLevelDifficulty;
 bool isBeam = false;
 
 byte sendData;
-byte recievingFace;
+
+Timer ghostWaitTimer;
+Timer deadTimer;
 
 
 
@@ -24,7 +30,7 @@ void setup() {
   // put your setup code here, to run once:
   randomize();
   levelDifficulty = 1;
-  state = PLAY;
+  state = SELECT;
 }
 
 void loop() {
@@ -57,36 +63,20 @@ void loop() {
 
 
   //DISPLAYING
-
-  FOREACH_FACE(f) {
-    switch (faceBlinkType[f]) {
-      case BOARD:
-        setColorOnFace(PALE, f);
-        break;
-      case BEAM_IN:
-        setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]], 255, 150), f);
-        break;
-      case BEAM_OUT:
-        setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]], 255, 255), f);
-        break;
-
-    }
+  switch(state){
+    case SELECT:
+      levelSelectDisplay();
+      break;
+    case RESULTS:
+      resultsDisplay();
+      break;
+    case PLAY:
+      playDisplay();
+      break;
   }
-
-  //  if (state == SELECT) {
-  //    levelSelectDisplay();
-  //  } else if (state == RESULTS) {
-  //    resultsDisplay();
-  //  } else {
-  //    FOREACH_FACE(f) {
-  //      if (faceBlinkType[f] == BOARD) {
-  //        setColorOnFace(PALE, f);
-  //      } else if (faceBlinkType[f] == BEAM_OUT) {
-  //        setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]], 240, 255), f);
-  //      }
-  //    }
-  //  }
-
+  
+    
+  
 }
 
 void levelSelectLoop() {
@@ -151,10 +141,10 @@ void playLoop() {
         faceBeamType[f] = beamSwitch;
       }
     }
-  } else {//board behavior
+  }else {//board behavior
     if (buttonDoubleClicked()) {
       state = PLAY;
-      isBeam = true;;
+      isBeam = true;
       FOREACH_FACE(f) {
         faceBlinkType[f] = BEAM_OUT;
         faceBeamType[f] = 1;
@@ -176,20 +166,6 @@ void playLoop() {
   //HERE YOU DO THE LOOPS TO CHANGE TO RESULTS STATE
 
   //LISTEN FOR OTHERS IN SELECT STAGE
-  /*
-    FOREACH_FACE(f){
-      if(!isValueReceivedOnFaceExpired(f)){
-        if(getState(getLastValueReceivedOnFace(f))==PLAY){
-          state=SELECT;
-          FOREACH_FACE(f){
-            faceBlinkType[f]=BOARD;
-            faceBeamType[f]=0;
-            isBeam=false;
-          }
-        }
-      }
-    }
-  */
 }
 
 void boardLoop(byte face) {
@@ -228,6 +204,26 @@ void resultsLoop() {
 
 }
 
+//DISPLAYS
+void playDisplay(){
+  if(mobType==0){
+    FOREACH_FACE(f) {
+        if(faceBlinkType[f]==BOARD){
+          setColorOnFace(PALE,f);
+        }else{
+          setColorOnFace(makeColorHSB(beamColors[faceBeamType[f]], 255, 255), f);
+        }
+     }
+  }else{
+    byte badFaces=map(deadTimer.getRemaining(),0,DEAD_TIME,0,5);
+    setColor(makeColorHSB(mobColors[mobType-1],255,255));
+    FOREACH_FACE(f){
+      if(f>badFaces){
+        setColorOnFace(makeColorHSB(mobColors[mobType-1],255,125),f);
+      }
+    }
+  }
+}
 void levelSelectDisplay() {
   setColor(PALE);
   FOREACH_FACE(f) {
@@ -241,6 +237,7 @@ void resultsDisplay() {
   setColor(BLUE);
 }
 
+//makes sure beams don't cross
 bool isAllBoard(){
   byte check=0;
   FOREACH_FACE(f){
