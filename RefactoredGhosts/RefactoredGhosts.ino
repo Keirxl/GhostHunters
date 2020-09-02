@@ -1,8 +1,11 @@
 
 #define PALE makeColorHSB(200,60,60)
 #define DEAD_TIME 4500
+#define GHOST_WAIT_TIME 2000
+#define SURVIVAL_TIME 50000
+#define BOSS_TIME 3000
 
-byte beamColors[3] = {45, 135, 8};
+byte beamColors[3] = {230, 8, 135};
 byte beamSwitch = 1;
 byte mobColors[4]={230,8,135,75};
 byte mobType=0; //1=ghosts 2=ghouls 3=polters 4=goblins
@@ -15,13 +18,19 @@ byte faceBlinkType[6] = {BOARD, BOARD, BOARD, BOARD, BOARD, BOARD};
 byte faceBeamType[6] = {0, 0, 0, 0, 0, 0}; //EF //light,geist,laser
 byte levelDifficulty = 1; //DEF in level select state
 byte receivedLevelDifficulty;
-
 bool isBeam = false;
-
 byte sendData;
+
+byte randomHaunting;
+byte ghoulOrGhost;
+byte BOSS_SPAWN_CHANCE=101;   //95 seems good 
+byte GHOST_GHOUL_SPAWN_CHANCE=80;  //80 seems good
+byte POLTER_SPAWN_CHANCE=12;
 
 Timer ghostWaitTimer;
 Timer deadTimer;
+Timer bossTimer;
+Timer gameTimer;
 
 
 
@@ -84,6 +93,8 @@ void levelSelectLoop() {
   if (buttonMultiClicked()) {
     byte clicks = buttonClickCount();
     if (clicks == 3) {
+      ghostWaitTimer.set(GHOST_WAIT_TIME);
+      bossTimer.set(BOSS_TIME);
       state = PLAY;
     }
   }
@@ -123,6 +134,8 @@ void levelSelectLoop() {
   FOREACH_FACE(f) {
     if (!isValueReceivedOnFaceExpired(f)) {
       if (getState(getLastValueReceivedOnFace(f)) == PLAY) {
+        ghostWaitTimer.set(GHOST_WAIT_TIME);
+        bossTimer.set(BOSS_TIME);
         state = PLAY;
       }
     }
@@ -151,6 +164,47 @@ void playLoop() {
       }
     }
 
+      //Mob Spawning
+  if(isAllBoard){
+    if(ghostWaitTimer.isExpired()){
+      randomHaunting=random(100);
+      ghoulOrGhost=(random(100));
+        if(randomHaunting>=GHOST_GHOUL_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
+          if(55<ghoulOrGhost){
+            mobType=2;
+          }else{
+            mobType=1;
+          }
+            deadTimer.set(DEAD_TIME);
+        }else if(randomHaunting<POLTER_SPAWN_CHANCE){
+          mobType=3;
+          deadTimer.set(DEAD_TIME);
+        }
+      ghostWaitTimer.set(GHOST_WAIT_TIME);
+    }
+     if(bossTimer.isExpired()){
+      randomHaunting=random(100);
+        if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
+          deadTimer.set(DEAD_TIME);
+          mobType=4;
+          bossTimer.set(BOSS_TIME);
+        }
+      }
+  }
+  //mob killing
+  if(mobType!=0){
+    FOREACH_FACE(f){
+      if (!isValueReceivedOnFaceExpired(f)){
+        if(getBlinkType(getLastValueReceivedOnFace(f))== BEAM_OUT){
+          byte recievedLaserType=getBeamType(getLastValueReceivedOnFace(f));
+          if((recievedLaserType+1)==mobType){
+            mobType=0;
+          }
+        }
+      }
+    }
+  }
+
     FOREACH_FACE(f) {
       switch (faceBlinkType[f]) {
         case BOARD:
@@ -162,6 +216,7 @@ void playLoop() {
       }
     }
   }
+
 
   //HERE YOU DO THE LOOPS TO CHANGE TO RESULTS STATE
 
@@ -237,7 +292,7 @@ void resultsDisplay() {
   setColor(BLUE);
 }
 
-//makes sure beams don't cross
+//makes sure beams don't cross and mobs don't spawn in beams
 bool isAllBoard(){
   byte check=0;
   FOREACH_FACE(f){
