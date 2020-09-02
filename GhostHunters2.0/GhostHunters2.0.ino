@@ -195,15 +195,9 @@ void PLAYLoop() {
 
     if(buttonDoubleClicked()){
       if(isAlone()){
-        source=!source;
-        if(source==false){
-          blinkType=WIN;
-          signalState=RESOLVE;
-          levelDifficulty=1;
-        }else{
-          weaponType=1;
-          weaponHandling();
-        }
+        source=true;
+        weaponType=1;
+        weaponHandling();
       }
     }
 
