@@ -1,4 +1,4 @@
-
+//refactored
 #define PALE makeColorHSB(200,60,60)
 #define DEAD_TIME 4500
 #define GHOST_WAIT_TIME 2000
@@ -11,7 +11,7 @@ byte mobColors[4]={230,8,135,75};
 byte mobType=0; //1=ghosts 2=ghouls 3=polters 4=goblins
 
 //ABCDEF
-enum state {SELECT, PLAY, RESULTS}; //AB
+enum state {SELECT, PLAY, DEAD, WIN}; //AB
 byte state;
 enum blinkType {BOARD, BEAM_IN, BEAM_OUT}; //CD
 byte faceBlinkType[6] = {BOARD, BOARD, BOARD, BOARD, BOARD, BOARD};
@@ -51,8 +51,11 @@ void loop() {
     case PLAY:
       playLoop();
       break;
-    case RESULTS:
-      resultsLoop();
+    case DEAD:
+      deadLoop();
+      break;
+    case WIN:
+      winLoop();
       break;
   }
 
@@ -76,9 +79,6 @@ void loop() {
     case SELECT:
       levelSelectDisplay();
       break;
-    case RESULTS:
-      resultsDisplay();
-      break;
     case PLAY:
       playDisplay();
       break;
@@ -95,6 +95,7 @@ void levelSelectLoop() {
     if (clicks == 3) {
       ghostWaitTimer.set(GHOST_WAIT_TIME);
       bossTimer.set(BOSS_TIME);
+      gameTimer.set(SURVIVAL_TIME);
       state = PLAY;
     }
   }
@@ -136,6 +137,7 @@ void levelSelectLoop() {
       if (getState(getLastValueReceivedOnFace(f)) == PLAY) {
         ghostWaitTimer.set(GHOST_WAIT_TIME);
         bossTimer.set(BOSS_TIME);
+        gameTimer.set(SURVIVAL_TIME);
         state = PLAY;
       }
     }
@@ -143,6 +145,13 @@ void levelSelectLoop() {
 }
 
 void playLoop() {
+
+  if(deadTimer.isExpired()){
+    state=DEAD;
+  }
+  if(gameTimer.isExpired()){
+    state=WIN;
+  }
 
   if (isBeam) {//flashlight behavior
     if (buttonSingleClicked()) {
@@ -217,10 +226,16 @@ void playLoop() {
     }
   }
 
-
-  //HERE YOU DO THE LOOPS TO CHANGE TO RESULTS STATE
-
-  //LISTEN FOR OTHERS IN SELECT STAGE
+//change to dead or win
+  FOREACH_FACE(f){
+     if(!isValueReceivedOnFaceExpired(f)){
+       if(getState(getLastValueReceivedOnFace(f))==DEAD){
+         state=DEAD;
+       }else if(getState(getLastValueReceivedOnFace(f))==WIN){
+          state=WIN;
+       }
+     }
+   }
 }
 
 void boardLoop(byte face) {
@@ -255,8 +270,26 @@ void beamInLoop(byte face) {
   }
 }
 
-void resultsLoop() {
+void deadLoop() {
+  setColor(makeColorHSB(8,200,255));
+  FOREACH_FACE(f){
+     if(!isValueReceivedOnFaceExpired(f)){
+       if(getState(getLastValueReceivedOnFace(f))==SELECT){
+         state=SELECT;
+       }
+     }
+   }
+}
 
+void winLoop(){
+  setColor(YELLOW);
+  FOREACH_FACE(f){
+     if(!isValueReceivedOnFaceExpired(f)){
+       if(getState(getLastValueReceivedOnFace(f))==SELECT){
+         state=SELECT;
+       }
+     }
+   }
 }
 
 //DISPLAYS
@@ -288,9 +321,6 @@ void levelSelectDisplay() {
   }
 }
 
-void resultsDisplay() {
-  setColor(BLUE);
-}
 
 //makes sure beams don't cross and mobs don't spawn in beams
 bool isAllBoard(){
