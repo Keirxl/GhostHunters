@@ -193,15 +193,17 @@ void playLoop() {
 }
 
 void boardLoop(byte face) {
-  if (!isValueReceivedOnFaceExpired(face)) {//neighbor!
-    byte neighborData = getLastValueReceivedOnFace(face);
-    if (getBlinkType(neighborData) == BEAM_OUT) {
-
-      faceBlinkType[face] = BEAM_IN;
-      faceBeamType[face] = getBeamType(neighborData);
-
-      faceBlinkType[(face + 3) % 6] = BEAM_OUT;
-      faceBeamType[(face + 3) % 6] = getBeamType(neighborData);
+  if(isAllBoard()){
+    if (!isValueReceivedOnFaceExpired(face)) {//neighbor!
+      byte neighborData = getLastValueReceivedOnFace(face);
+      if (getBlinkType(neighborData) == BEAM_OUT) {
+  
+        faceBlinkType[face] = BEAM_IN;
+        faceBeamType[face] = getBeamType(neighborData);
+  
+        faceBlinkType[(face + 3) % 6] = BEAM_OUT;
+        faceBeamType[(face + 3) % 6] = getBeamType(neighborData);
+      }
     }
   }
 }
@@ -237,6 +239,20 @@ void levelSelectDisplay() {
 
 void resultsDisplay() {
   setColor(BLUE);
+}
+
+bool isAllBoard(){
+  byte check=0;
+  FOREACH_FACE(f){
+    if(faceBlinkType[f]==BEAM_IN){
+      check++;
+    }
+  }
+  if(check>0){
+    return false;
+  }else{
+    return true;
+  }
 }
 
 
