@@ -1,4 +1,4 @@
-//2.0
+//2.00000
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
 #define geistHue 135
@@ -282,6 +282,7 @@ void PLAYLoop() {
       ghostWaitTimer.set(GHOST_WAIT_TIME);
       //ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
     }
+  }
     //BOSS SPAWNIN
     if(bossTimer.isExpired()){
       randomHaunting=random(100);
@@ -400,7 +401,7 @@ void PLAYLoop() {
     }
   }
 }
-}
+
 //--------------------------
 //     GO LOOP transitions to PLAY
 //--------------------------
