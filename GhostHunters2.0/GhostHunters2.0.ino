@@ -4,7 +4,7 @@
 #define geistHue 135
 #define bossHue 75
 #define ghoulHue 8
-#define DEAD_TIME 5000
+#define DEAD_TIME 4500
 #define GHOST_WAIT_TIME 2000
 #define BOSS_TIME 3000
 #define PERIOD 2000
@@ -37,6 +37,7 @@ byte receivedLevelDifficulty;
 byte weaponType=1;
 byte badBoiType;
 byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
+byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
 
 void setup() {
   // put your setup code here, to run once:
@@ -98,14 +99,18 @@ void loop() {
     sendData = (levelDifficulty<<2) + signalState;
     setValueSentOnAllFaces(sendData);
   }else{
-    sendData = (blinkType<<2) + signalState;
-    if(blinkType==LIGHT || blinkType==BEAM || blinkType==GEISTGUN){
-      if(source){
-        setValueSentOnAllFaces(sendData);
+    if(!source){
+      if(blinkType==LIGHT || blinkType==BEAM || blinkType==GEISTGUN){
+        FOREACH_FACE(f){
+          sendData = (faceBlinkType[f]<<2) + signalState;
+          setValueSentOnFace(sendData,f);
+        }
       }else{
-        setValueSentOnFace(sendData,(receivingFace+3)%6);
+        sendData = (blinkType<<2) + signalState;
+        setValueSentOnAllFaces(sendData);
       }
     }else{
+      sendData = (blinkType<<2) + signalState;
       setValueSentOnAllFaces(sendData);
     }
   }
@@ -330,11 +335,14 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT){
         blinkType=LIGHT;
+        faceBlinkType[(receivingFace+3)%6]=LIGHT;
       }else{
         blinkType=EMPTY;
+        faceBlinkType[(receivingFace+3)%6]=EMPTY;
       }
     }else{
       blinkType=EMPTY;
+      faceBlinkType[(receivingFace+3)%6]=EMPTY;
     }
   }
   
@@ -344,11 +352,14 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM){
         blinkType=BEAM;
+        faceBlinkType[(receivingFace+3)%6]=BEAM;
       }else{
         blinkType=EMPTY;
+        faceBlinkType[(receivingFace+3)%6]=EMPTY;
       }
     }else{
       blinkType=EMPTY;
+      faceBlinkType[(receivingFace+3)%6]=EMPTY;
     }
   }
 
@@ -357,11 +368,14 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==GEISTGUN){
         blinkType=GEISTGUN;
+        faceBlinkType[(receivingFace+3)%6]=GEISTGUN;
       }else{
         blinkType=EMPTY;
+        faceBlinkType[(receivingFace+3)%6]=EMPTY;
       }
     }else{
       blinkType=EMPTY;
+      faceBlinkType[(receivingFace+3)%6]=EMPTY;
     }
   }
 
@@ -373,13 +387,14 @@ void PLAYLoop() {
           if(beamType == LIGHT || beamType == BEAM || beamType == GEISTGUN){
             receivingFace=f;
             blinkType=beamType;
+            faceBlinkType[(receivingFace+3)%6]=beamType;
           }
        }
      }
   }
 
   //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
-  if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS){
+  if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS || blinkType==POLTER){
     if(deadTimer.isExpired()){
       blinkType=DEAD;
     }
@@ -521,7 +536,7 @@ void breath(){
 }
 
 void lightDisplay(){
-  setColor(makeColorHSB(lightHue,255,255));
+  setColor(makeColorHSB(lightHue,0,255));
 }
 
 void beamDisplay(){
@@ -531,7 +546,7 @@ void beamDisplay(){
 }
 
 void geistGunDisplay(){
-  setColor(makeColorHSB(geistHue,random(50)+190,random(65)+190));
+  setColor(makeColorHSB(geistHue,random(85)+170,random(65)+190));
 }
 
 
@@ -547,13 +562,18 @@ void winDisplay(){
 
 
 void badBoiDisplay(){
+  byte sat=255;
+  if(blinkType==GHOST){
+    sat=0;
+  }
   breath();
-  byte badFaces=map(deadTimer.getRemaining(),0,DEAD_TIME,0,5);
-  setColor(makeColorHSB(badBoiHue[badBoiType],255,dimness));
+  byte badFaces = map(deadTimer.getRemaining(),0,DEAD_TIME,0,5);
+  
+  setColor(makeColorHSB(badBoiHue[badBoiType],sat,dimness));
   
   FOREACH_FACE(f){
-    if(f>badFaces){
-      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],255,dimness-130),f);
+    if(f<=badFaces){
+      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-120),f);
     }
   }
 }
