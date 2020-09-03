@@ -93,10 +93,7 @@ void levelSelectLoop() {
   if (buttonMultiClicked()) {
     byte clicks = buttonClickCount();
     if (clicks == 3) {
-      ghostWaitTimer.set(GHOST_WAIT_TIME);
-      bossTimer.set(BOSS_TIME);
-      gameTimer.set(SURVIVAL_TIME);
-      state = PLAY;
+      transitionLoop(true);
     }
   }
 
@@ -135,26 +132,22 @@ void levelSelectLoop() {
   FOREACH_FACE(f) {
     if (!isValueReceivedOnFaceExpired(f)) {
       if (getState(getLastValueReceivedOnFace(f)) == PLAY) {
-        ghostWaitTimer.set(GHOST_WAIT_TIME);
-        bossTimer.set(BOSS_TIME);
-        gameTimer.set(SURVIVAL_TIME);
-        state = PLAY;
+        transitionLoop(true);
       }
     }
   }
 }
 
 void playLoop() {
-
-  if(deadTimer.isExpired()){
-    state=DEAD;
-  }
-  if(gameTimer.isExpired()){
-    state=WIN;
+  //YOU LOSE
+  if(mobType!=0){
+    if(deadTimer.isExpired()){
+      state=DEAD;
+    }
   }
 
   if (isBeam) {//flashlight behavior
-    if (buttonSingleClicked()) {
+    if (buttonPressed()) {
       beamSwitch++; //could be changed to save space
       if (beamSwitch > 2) {
         beamSwitch = 0;
@@ -164,6 +157,9 @@ void playLoop() {
       }
     }
   }else {//board behavior
+    if(gameTimer.isExpired()){
+      state=WIN;
+    }
     if (buttonDoubleClicked()) {
       state = PLAY;
       isBeam = true;
@@ -175,6 +171,7 @@ void playLoop() {
 
       //Mob Spawning
   if(isAllBoard){
+    if(mobType==0){
     if(ghostWaitTimer.isExpired()){
       randomHaunting=random(100);
       ghoulOrGhost=(random(100));
@@ -199,6 +196,7 @@ void playLoop() {
           bossTimer.set(BOSS_TIME);
         }
       }
+    }
   }
   //mob killing
   if(mobType!=0){
@@ -271,22 +269,34 @@ void beamInLoop(byte face) {
 }
 
 void deadLoop() {
+  if (buttonMultiClicked()) {
+    byte clicks = buttonClickCount();
+    if (clicks == 3) {
+      transitionLoop(false);
+    }
+  }
   setColor(makeColorHSB(8,200,255));
   FOREACH_FACE(f){
      if(!isValueReceivedOnFaceExpired(f)){
        if(getState(getLastValueReceivedOnFace(f))==SELECT){
-         state=SELECT;
+        transitionLoop(false);
        }
      }
    }
 }
 
 void winLoop(){
+  if (buttonMultiClicked()) {
+    byte clicks = buttonClickCount();
+    if (clicks == 3) {
+      transitionLoop(false);
+    }
+  }
   setColor(YELLOW);
   FOREACH_FACE(f){
      if(!isValueReceivedOnFaceExpired(f)){
        if(getState(getLastValueReceivedOnFace(f))==SELECT){
-         state=SELECT;
+        transitionLoop(false);
        }
      }
    }
@@ -336,6 +346,28 @@ bool isAllBoard(){
     return true;
   }
 }
+
+void transitionLoop(bool transToPlay){
+  if(transToPlay){
+      ghostWaitTimer.set(GHOST_WAIT_TIME);
+      bossTimer.set(BOSS_TIME);
+      gameTimer.set(SURVIVAL_TIME);
+      state = PLAY;
+      //spawn rates here
+      BOSS_SPAWN_CHANCE=101;   //95 seems good 
+      GHOST_GHOUL_SPAWN_CHANCE=80;  //80 seems good
+      POLTER_SPAWN_CHANCE=12;
+  }else{
+    isBeam = false;
+    FOREACH_FACE(f) {
+      faceBlinkType[f] = BOARD;
+    }
+    state = SELECT;
+    mobType=0;
+  }
+}
+
+
 
 
 
