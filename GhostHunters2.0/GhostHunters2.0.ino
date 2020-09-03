@@ -76,12 +76,7 @@ void loop() {
         badBoiDisplay();
         break;
       case LIGHT:  
-<<<<<<< Updated upstream
-        setColor(makeColorHSB(badBoiHue[LIGHT-3],255,255));
-        //lightDisplay();
-=======
         lightDisplay();
->>>>>>> Stashed changes
         break;
       case DEAD:
          deadDisplay();
