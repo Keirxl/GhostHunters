@@ -75,8 +75,9 @@ void loop() {
       case GHOST:
         badBoiDisplay();
         break;
-      case LIGHT:       
-        lightDisplay();
+      case LIGHT:  
+        setColor(makeColorHSB(badBoiHue[LIGHT-3],255,255));
+        //lightDisplay();
         break;
       case DEAD:
          deadDisplay();
@@ -87,9 +88,6 @@ void loop() {
       case GEISTGUN:
           geistGunDisplay();
          break;
-      default:
-        setColor(BLUE);
-        break;
     }
   }else{
     levelSelectDisplay();
@@ -220,7 +218,6 @@ void PLAYLoop() {
                weaponType=1;
             }
           }
-          
           weaponHandling();
       }
     }
@@ -411,15 +408,6 @@ void PLAYLoop() {
   }
 }
 
-//--------------------------
-//     GO LOOP transitions to PLAY
-//--------------------------
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//###############################################
-//       LEVEL DIFFICULTY MODIFIERS ARE HERE
-//###############################################
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void goLoop() {
   signalState = PLAY;
   
