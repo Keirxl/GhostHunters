@@ -1,4 +1,4 @@
-//2.00000
+//2.0
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
 #define geistHue 135
@@ -76,8 +76,12 @@ void loop() {
         badBoiDisplay();
         break;
       case LIGHT:  
+<<<<<<< Updated upstream
         setColor(makeColorHSB(badBoiHue[LIGHT-3],255,255));
         //lightDisplay();
+=======
+        lightDisplay();
+>>>>>>> Stashed changes
         break;
       case DEAD:
          deadDisplay();
