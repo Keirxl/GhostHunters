@@ -518,16 +518,24 @@ void breath(){
 
 
 void beamsDisplay(){
+  byte sat=240;
   if(blinkType==LIGHT){
-    setColor(WHITE);
-  }else if(blinkType==BEAM){
-    setColor(OFF);
-    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),receivingFace);
-    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+    sat=0;
+  }
+  if(source){
+    setColor(makeColorHSB(badBoiHue[blinkType-5],sat,255));
   }else{
-    setColor(makeColorHSB(badBoiHue[blinkType-5],random(50)+190,random(70)+70));
-    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),receivingFace);
-    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+    if(blinkType==LIGHT){
+      setColor(WHITE);
+    }else if(blinkType==BEAM){
+      setColor(OFF);
+      setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),receivingFace);
+      setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+    }else{
+      setColor(makeColorHSB(badBoiHue[blinkType-5],random(50)+190,random(70)+70));
+      setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),receivingFace);
+      setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),(receivingFace+3)%6);
+    }
   }
 }
 
