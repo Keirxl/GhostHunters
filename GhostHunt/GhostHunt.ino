@@ -1,6 +1,5 @@
 //Version Notes:
 // using enumerated blinkTypes in some cases for color
-// 83% capacity 4924 bytes
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
 #define geistHue 135
@@ -246,6 +245,7 @@ void PLAYLoop() {
 
   //GHOST AND GHOUL SPAWNING AND ALSO SOME POLTERGEISTS!
   if(blinkType==EMPTY){
+    if(noGhostNeighbors){
     if(ghostWaitTimer.isExpired()){
       //check for neighborGhosts. dont spawn a ghost if neighbor is a ghosts 
       randomHaunting=random(100);
@@ -281,6 +281,7 @@ void PLAYLoop() {
         }
       bossTimer.set(BOSS_TIME);
     }
+  }
 }
   
 //----------------
@@ -464,7 +465,7 @@ void resolveLoop() {
 
   blinkType=EMPTY;
   source=false;
-  levelDifficulty=1;
+  //levelDifficulty=1;
 
   //look for neighbors who have not moved to RESOLVE
   FOREACH_FACE(f) {
@@ -566,6 +567,22 @@ void levelSelectDisplay(){
     if(f<levelDifficulty){
       setColorOnFace(WHITE,f);
     }
+  }
+}
+
+bool noGhostNeighbors(){
+  byte neighbors=0;
+  FOREACH_FACE(f) {
+    if (!isValueReceivedOnFaceExpired(f)) {//a neighbor!
+      if (getBlinkType(getLastValueReceivedOnFace(f)) !=EMPTY) {
+          neighbors++;
+      }
+    }
+  }
+  if(neighbors>0){
+    return true;
+  }else{
+    return false;
   }
 }
 
