@@ -269,19 +269,18 @@ void PLAYLoop() {
       ghostWaitTimer.set(GHOST_WAIT_TIME);
       //ghostWaitTimer.set(random(500)+RANDOM_GHOST_TIME);
     }
-  }
+  
     //BOSS SPAWNIN
     if(bossTimer.isExpired()){
       randomHaunting=random(100);
         if(randomHaunting>=BOSS_SPAWN_CHANCE){  //CHANGE TO ADJUST SPAWN RATE
-          deadTimer.set(DEAD_TIME);
           blinkType=BOSS;
           badBoiType=3;
-      
+          deadTimer.set(DEAD_TIME);
+        }
       bossTimer.set(BOSS_TIME);
-      //bossTimer.set(random(500)+RANDOM_BOSS_TIME);
     }
-  }
+}
   
 //----------------
 //   KILLING MOBS 
@@ -442,12 +441,8 @@ void goLoop() {
       POLTER_SPAWN_CHANCE=20;  
       break;
   }
-
-  
   
   gameTimer.set(SURVIVAL_TIME);
-  
-  
 
   //look for neighbors who have not heard the news
   FOREACH_FACE(f) {
@@ -468,6 +463,7 @@ void resolveLoop() {
 
   blinkType=EMPTY;
   source=false;
+  levelDifficulty=1;
 
   //look for neighbors who have not moved to RESOLVE
   FOREACH_FACE(f) {
