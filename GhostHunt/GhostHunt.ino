@@ -427,12 +427,12 @@ void goLoop() {
       POLTER_SPAWN_CHANCE=17;    
       break;
     case 4: //og difficulty (ghosts ghouls, goblins)
-      BOSS_SPAWN_CHANCE=95;
+      BOSS_SPAWN_CHANCE=97;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       POLTER_SPAWN_CHANCE=0;
       break;
    case 5:                       //oh boy...
-      BOSS_SPAWN_CHANCE=95;
+      BOSS_SPAWN_CHANCE=97;
       GHOST_GHOUL_SPAWN_CHANCE=80;
       POLTER_SPAWN_CHANCE=15;  
       break;
@@ -517,9 +517,17 @@ void breath(){
 
 
 void beamsDisplay(){
-  setColor(makeColorHSB(badBoiHue[blinkType-5],random(50)+190,random(70)+70));
-  setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),receivingFace);
-  setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+  if(blinkType==LIGHT){
+    setColor(WHITE);
+  }else if(blinkType==BEAM){
+    setColor(OFF);
+    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),receivingFace);
+    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+  }else{
+    setColor(makeColorHSB(badBoiHue[blinkType-5],random(50)+190,random(70)+70));
+    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),receivingFace);
+    setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],240,255),(receivingFace+3)%6);
+  }
 }
 
 
