@@ -11,6 +11,7 @@
 #define BOSS_TIME 3000
 #define PERIOD 2000
 #define SURVIVAL_TIME 50000 //one minute
+#define INITIAL_SPAWN_TIME 500
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -406,7 +407,7 @@ void goLoop() {
   }
   
   bossTimer.set(BOSS_TIME);
-  ghostWaitTimer.set(GHOST_WAIT_TIME);
+  ghostWaitTimer.set((random(INITIAL_SPAWN_TIME)*3));
    
   
   switch(levelDifficulty){
