@@ -22,7 +22,7 @@ enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,GEISTGUN,BOSS,POLTER};
 byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
-byte levelDifficulty;
+byte levelDifficulty=1;
 bool source=false;
 byte sendData;
 
@@ -43,7 +43,6 @@ byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
 void setup() {
   // put your setup code here, to run once:
   randomize();
-  levelDifficulty=1;
 }
 
 void loop() {
