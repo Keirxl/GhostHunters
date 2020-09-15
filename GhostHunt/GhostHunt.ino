@@ -120,7 +120,6 @@ void levelSelectLoop(){
         signalState=GO;
         source=true;
         blinkType=LIGHT;
-      
     }
 
   //CHANGE TO PLAY STAGE
