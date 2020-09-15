@@ -117,11 +117,10 @@ void levelSelectLoop(){
 
   //WEAPON MAKER    Maybe double click while attached to start game?
   if(buttonDoubleClicked()){
-      if(isAlone()){
         signalState=GO;
         source=true;
         blinkType=LIGHT;
-      }
+      
     }
 
   //CHANGE TO PLAY STAGE
