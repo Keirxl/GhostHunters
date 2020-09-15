@@ -1,5 +1,6 @@
 //Version Notes:
 // using enumerated blinkTypes in some cases for color
+//no double click to start
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
 #define geistHue 135
