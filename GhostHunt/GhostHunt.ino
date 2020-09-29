@@ -1,7 +1,7 @@
 //Version Notes:
+//9/29/2020
 // using enumerated blinkTypes in some cases for color
 //stores spawn rates in a list
-//has WINTOKENS
 //double click to start
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
@@ -22,7 +22,7 @@ byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
 byte POLTER_SPAWN_CHANCE;
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,GEISTGUN,BOSS,POLTER,WINTOKEN};
+enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,GEISTGUN,BOSS,POLTER};
 byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -34,7 +34,6 @@ Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you lose
 Timer gameTimer;
 Timer bossTimer;
-Timer winTokenTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
@@ -45,8 +44,6 @@ byte badBoiType;
 byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
 byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
 byte spawnRates[18]={80,80,75,80,80,75,0,15,17,0,15,20,101,101,101,97,97,90};
-byte winTokenSpawnChance=101;
-byte winFace=0;
 
 
 void setup() {
@@ -92,9 +89,6 @@ void loop() {
       case DEAD:
          deadDisplay();
          break;
-      case WINTOKEN:
-          winTokenDisplay();
-          break;
     }
   }else{
     levelSelectDisplay();
@@ -187,9 +181,7 @@ void PLAYLoop() {
     if(!source){
       byte clicks=buttonClickCount();
       if(clicks==3){
-        blinkType=WIN;
         signalState = RESOLVE;
-        levelDifficulty=1;
       }
     }
   }
@@ -224,31 +216,11 @@ void PLAYLoop() {
   
 //WIN CONDITION and WINTOKENS
   if(gameTimer.isExpired()){
-    if(levelDifficulty!=6){
-      if(blinkType!=DEAD && source==false){
-        blinkType=WIN;
-      }
-    }else{
-      //WINTOKEN spawn
-      if(winTokenTimer.isExpired()){
-        if(WINTOKEN_SPAWN_CHANCE<random(100)){
-           blinkType=WINTOKEN;
-        }
-        winTokenTimer.set(GHOST_WAIT_TIME);
-      }
-    }
+     if(blinkType!=DEAD && source==false){
+       blinkType=WIN;
+     }
   }
 
-  if(blinkType==WINTOKEN){
-      if(!isValueReceivedOnFaceExpired(winFace)){
-        if(getBlinkType(getLastValueReceivedOnFace(winFace))==LIGHT){
-          blinkType==WIN;
-        }
-      }
-  }
-
-
-  
 
   if(blinkType!=DEAD){
     FOREACH_FACE(f){
@@ -579,17 +551,6 @@ void levelSelectDisplay(){
   }
 }
 
-void winTokenDisplay(){
-  if(ghostWaitTimer.isExpired()){
-    winFace++;
-    if(winFace>5){
-      winFace=0;
-    }
-    ghostWaitTimer.set(INITIAL_SPAWN_TIME);
-  }
-  setColor(OFF);
-  setColorOnFace(YELLOW,winFace);
-}
 
 bool noGhostNeighbors(){
   byte neighbors=0;
