@@ -438,7 +438,9 @@ void resolveLoop() {
 
   blinkType=EMPTY;
   source=false;
-  //levelDifficulty=1;
+  FOREACH_FACE(f){
+    faceBlinkType[f]=EMPTY;
+  }
 
   //look for neighbors who have not moved to RESOLVE
   FOREACH_FACE(f) {
@@ -536,7 +538,7 @@ void badBoiDisplay(){
   
   FOREACH_FACE(f){
     if(f<=badFaces-1){
-      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-120),f);
+      setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-100),f);
     }
   }
 }
