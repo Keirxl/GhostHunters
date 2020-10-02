@@ -14,7 +14,8 @@
 #define PERIOD 2000
 #define SURVIVAL_TIME 50000 //one minute
 #define INITIAL_SPAWN_TIME 500
-#define WINTOKEN_SPAWN_CHANCE 90
+#define WINTOKEN_SPAWN_CHANCE 98
+#define ROTATE_FACE_TIME 800
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -22,7 +23,7 @@ byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
 byte POLTER_SPAWN_CHANCE;
 
 // A B C D E F
-enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,GEISTGUN,BOSS,POLTER};
+enum blinkType {EMPTY,GHOST,GHOUL,DEAD,WIN,LIGHT,BEAM,GEISTGUN,BOSS,POLTER,WINTOKEN};
 byte blinkType=EMPTY;
 enum signalState {LEVELSELECT,PLAY,GO,RESOLVE};
 byte signalState=LEVELSELECT;
@@ -34,6 +35,8 @@ Timer ghostWaitTimer;//when this runs out a new ghost may or may not spawn
 Timer deadTimer; //whent this runs out you lose
 Timer gameTimer;
 Timer bossTimer;
+Timer rotateFaceTimer;
+Timer winTokenTimer;
 
 byte receivingFace; //to orient the beam of light
 byte dimness;
@@ -43,8 +46,12 @@ byte receivedLevelDifficulty;
 byte badBoiType;
 byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
 byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
-byte spawnRates[18]={80,80,75,80,80,75,0,15,17,0,15,20,101,101,101,97,97,90};
 
+                                   //75            /20                  //90
+byte spawnRates[18]={80,80,75,80,80,80,0,12,17,0,15,15,101,101,101,97,97,97};
+
+byte hitFace=0;
+byte requiredWeapon=0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -89,6 +96,9 @@ void loop() {
       case DEAD:
          deadDisplay();
          break;
+       case WINTOKEN:
+          winTokenDisplay();
+          break;
     }
   }else{
     levelSelectDisplay();
@@ -176,15 +186,7 @@ void levelSelectLoop(){
 
 void PLAYLoop() {
 
-  //set myself to LEVELSELECT
-  if (buttonMultiClicked()) {
-    if(!source){
-      byte clicks=buttonClickCount();
-      if(clicks==3){
-        signalState = RESOLVE;
-      }
-    }
-  }
+
   
 //------------------------------------
 //   FLASHLIGHT AND LASER HANDLING
@@ -192,10 +194,16 @@ void PLAYLoop() {
 
     if(buttonDoubleClicked()){
         if(!source){
-          source=true;
-          blinkType=LIGHT;
+          if(gameTimer.getRemaining() < (SURVIVAL_TIME-1000)){
+            signalState=RESOLVE;
+          }else{
+            source=true;
+            blinkType=LIGHT;
+          }
         }
     }
+
+
 
     //WHAT WEAPONS ARE AVAILABLE
      
@@ -216,33 +224,58 @@ void PLAYLoop() {
   
 //WIN CONDITION and WINTOKENS
   if(gameTimer.isExpired()){
+    if(levelDifficulty==6){ //wintoken spawn things
+      if(blinkType==EMPTY){
+        if(winTokenTimer.isExpired()){
+          byte winTokenChance=random(100);
+          if(winTokenChance>WINTOKEN_SPAWN_CHANCE){
+            blinkType=WINTOKEN;
+            requiredWeapon=5;
+          }
+          winTokenTimer.set(GHOST_WAIT_TIME);
+        }
+      }
+    }else{
      if(blinkType!=DEAD && source==false){
        blinkType=WIN;
+     }
+    }
+  }
+
+//hitface rotates and required weapon is defined by the array?
+  if(blinkType==WINTOKEN){
+    if(rotateFaceTimer.isExpired()){
+      hitFace++;
+      if(hitFace>5){
+        hitFace=0;
+      }
+      rotateFaceTimer.set(ROTATE_FACE_TIME);
+    }
+    
+     if(!isValueReceivedOnFaceExpired(hitFace)){
+        if(getBlinkType(getLastValueReceivedOnFace(hitFace))==requiredWeapon){
+            requiredWeapon++;
+            if(requiredWeapon==8){
+              blinkType=WIN;
+            }
+        }
      }
   }
 
 
-  if(blinkType!=DEAD){
-    FOREACH_FACE(f){
-      if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==WIN){
-          blinkType==WIN;
-        }
-      }
-    }
-  }
-  
- //if im not dead,check to see if someone near me is dead. if so. same.
   
   if(blinkType!=DEAD && source==false){
     FOREACH_FACE(f){
       if(!isValueReceivedOnFaceExpired(f)){
-        if(getBlinkType(getLastValueReceivedOnFace(f))==DEAD){
+        byte winCondition=getBlinkType(getLastValueReceivedOnFace(f));
+        if(winCondition==DEAD){
           gameTimer.set(0);
           blinkType=DEAD;
+        }else if(winCondition==WIN){
+          blinkType=WIN;
         }
+       }
       }
-    }
   }
 
   //GHOST AND GHOUL SPAWNING AND ALSO SOME POLTERGEISTS!
@@ -551,6 +584,15 @@ void levelSelectDisplay(){
       setColorOnFace(WHITE,f);
     }
   }
+}
+
+void winTokenDisplay(){
+  byte sat=240;
+  if(requiredWeapon==5){
+    sat=0;
+  }
+  setColor(OFF);
+  setColorOnFace(makeColorHSB(badBoiHue[requiredWeapon-5],sat,255),hitFace);
 }
 
 
