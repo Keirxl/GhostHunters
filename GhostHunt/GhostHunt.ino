@@ -1,8 +1,7 @@
 //Version Notes:
-//9/29/2020
+//10/16/2020
 // using enumerated blinkTypes in some cases for color
 //stores spawn rates in a list
-//double click to start
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
 #define geistHue 135
@@ -48,7 +47,7 @@ byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
 byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
 
                                    //75            /20                  //90
-byte spawnRates[18]={80,80,75,80,80,80,0,12,17,0,15,15,101,101,101,97,97,97};
+byte spawnRates[18]={80,80,75,80,80,80,0,12,17,0,13,13,101,101,101,97,97,97};
 
 byte hitFace=0;
 byte requiredWeapon=0;
