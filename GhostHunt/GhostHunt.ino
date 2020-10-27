@@ -1,3 +1,10 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//       Ghost Hunters
+//                by Keir Williams
+//
+//
+//10/27/2020 Updated
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #define PALE makeColorHSB(200,60,60)
 #define lightHue 230
