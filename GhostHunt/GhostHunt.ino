@@ -13,15 +13,15 @@
 #define ghoulHue 8
 #define DEAD_TIME 4500
 #define BOSS_DEAD_TIME 5400
-#define GHOST_WAIT_TIME_EASY 2500
-#define GHOST_WAIT_TIME_MEDIUM 2000
-#define GHOST_WAIT_TIME_HARD 1700
+#define GHOST_WAIT_TIME_EASY 3000
+#define GHOST_WAIT_TIME_MEDIUM 2700
+#define GHOST_WAIT_TIME_HARD 2400
 #define BOSS_TIME 3000
 #define PERIOD 2000
-#define SURVIVAL_TIME 60000 //one minute
-#define LEVEL_SIX_SURVIVAL_TIME 90000 //one and a half
-#define INITIAL_SPAWN_TIME 800
-#define ROTATE_FACE_TIME 800
+#define SURVIVAL_TIME 50000 
+#define LEVEL_SIX_SURVIVAL_TIME 70000 
+#define INITIAL_SPAWN_TIME 500
+#define ROTATE_FACE_TIME 145
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE;   //95 seems good 
@@ -49,14 +49,16 @@ byte randomHaunting; //to see if haunted
 byte ghoulOrGhost; //decides ghoul or ghost
 byte receivedLevelDifficulty;
 byte badBoiType;
+byte killerBlinkType;
+byte swirlFace=0;
 byte badBoiHue[4]={lightHue,ghoulHue,geistHue,bossHue};
 byte faceBlinkType[6]={EMPTY,EMPTY,EMPTY,EMPTY,EMPTY,EMPTY};
 
-                                              
-byte spawnRates[18]={80,80,75,80,80,80,5,12,17,5,13,13,101,101,101,97,95,97};
+bool isKiller=false;
 
-byte hitFace=0;
-byte requiredWeapon=0;
+                                              
+//byte spawnRates[18]={80,80,75,80,80,80,3,12,17,3,13,13,101,101,101,97,95,97};
+byte spawnRates[18]={80,80,75,80,80,85,3,8,10,3,8,8,101,101,101,97,95,93};
 
 void setup() {
   // put your setup code here, to run once:
@@ -334,6 +336,9 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==LIGHT){
         blinkType=LIGHT;
+        FOREACH_FACE(f){
+          faceBlinkType[f]=EMPTY;
+        }
         faceBlinkType[(receivingFace+3)%6]=LIGHT;
       }else{
         blinkType=EMPTY;
@@ -351,6 +356,9 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==BEAM){
         blinkType=BEAM;
+        FOREACH_FACE(f){
+          faceBlinkType[f]=EMPTY;
+        }
         faceBlinkType[(receivingFace+3)%6]=BEAM;
       }else{
         blinkType=EMPTY;
@@ -367,6 +375,9 @@ void PLAYLoop() {
     if(!isValueReceivedOnFaceExpired(receivingFace)){
       if(getBlinkType(getLastValueReceivedOnFace(receivingFace))==GEISTGUN){
         blinkType=GEISTGUN;
+        FOREACH_FACE(f){
+          faceBlinkType[f]=EMPTY;
+        }
         faceBlinkType[(receivingFace+3)%6]=GEISTGUN;
       }else{
         blinkType=EMPTY;
@@ -395,7 +406,9 @@ void PLAYLoop() {
   //IF I DONT KILL THE GHOSTS OR GHOULS FAST ENOUGH I DIE
   if(blinkType==GHOST || blinkType==GHOUL || blinkType==BOSS || blinkType==POLTER){
     if(deadTimer.isExpired()){
+      killerBlinkType=blinkType;
       blinkType=DEAD;
+      isKiller=true;
     }
   }
 
@@ -418,9 +431,9 @@ void goLoop() {
   }
 
   if(levelDifficulty==1){
-      ghostWaitTimer.set((random(INITIAL_SPAWN_TIME)*3)+500);
+      ghostWaitTimer.set((random(INITIAL_SPAWN_TIME)*2)+1000);
   }else{
-      ghostWaitTimer.set((random(INITIAL_SPAWN_TIME)*3));
+      ghostWaitTimer.set((random(INITIAL_SPAWN_TIME)*2)+750);
   }
   
   bossTimer.set(BOSS_TIME);
@@ -450,9 +463,9 @@ void goLoop() {
 
 void resolveLoop() {
   signalState = LEVELSELECT;//I default to this at the start of the loop. Only if I see a problem does this not happen
-
   
   blinkType=EMPTY;
+  isKiller=false;
   source=false;
   FOREACH_FACE(f){
     faceBlinkType[f]=EMPTY;
@@ -539,7 +552,7 @@ void beamsDisplay(){
       setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),receivingFace);
       setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),(receivingFace+3)%6);
     }else{
-      setColor(makeColorHSB(badBoiHue[blinkType-5],random(70)+170,random(75)+55));
+      setColor(makeColorHSB(badBoiHue[blinkType-5],random(80)+160,random(75)+50));
       setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),receivingFace);
       setColorOnFace(makeColorHSB(badBoiHue[blinkType-5],sat,255),(receivingFace+3)%6);
     }
@@ -548,7 +561,23 @@ void beamsDisplay(){
 
 void deadDisplay(){
   breath();
-  setColor(makeColorHSB(15,random(70)+170,dimness));
+  if(isKiller){
+    byte sat=255;
+    if(killerBlinkType==GHOST){
+      sat=0;
+    }
+    if(rotateFaceTimer.isExpired()){
+      swirlFace++;
+      if(swirlFace>5){
+        swirlFace=0;
+      }
+      rotateFaceTimer.set(ROTATE_FACE_TIME);
+    }
+    setColor(makeColorHSB(badBoiHue[badBoiType],sat,dimness));
+    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-100),swirlFace);
+  }else{
+    setColor(makeColorHSB(15,random(70)+170,dimness));
+  }
 }
 
 void winDisplay(){
