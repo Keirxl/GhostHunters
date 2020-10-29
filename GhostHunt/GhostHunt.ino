@@ -3,7 +3,7 @@
 //                by Keir Williams
 //
 //
-//10/27/2020 Updated
+//10/29/2020 Updated
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #define PALE makeColorHSB(200,60,60)
@@ -24,8 +24,8 @@
 #define ROTATE_FACE_TIME 145
 
 // 100-these gives you the chance of spawn
-byte BOSS_SPAWN_CHANCE;   //95 seems good 
-byte GHOST_GHOUL_SPAWN_CHANCE;  //80 seems good
+byte BOSS_SPAWN_CHANCE; 
+byte GHOST_GHOUL_SPAWN_CHANCE;  
 byte POLTER_SPAWN_CHANCE;
 
 // A B C D E F
@@ -58,7 +58,7 @@ bool isKiller=false;
 
                                               
 //byte spawnRates[18]={80,80,75,80,80,80,3,12,17,3,13,13,101,101,101,97,95,97};
-byte spawnRates[18]={80,80,75,80,80,85,3,8,10,3,8,8,101,101,101,97,95,93};
+byte spawnRates[18]={80,80,75,85,80,85,2,8,10,3,8,8,101,101,101,97,95,93};
 
 void setup() {
   // put your setup code here, to run once:
