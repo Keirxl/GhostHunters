@@ -21,7 +21,7 @@
 #define SURVIVAL_TIME 50000 
 #define LEVEL_SIX_SURVIVAL_TIME 70000 
 #define INITIAL_SPAWN_TIME 500
-#define ROTATE_FACE_TIME 145
+#define ROTATE_FACE_TIME 130
 
 // 100-these gives you the chance of spawn
 byte BOSS_SPAWN_CHANCE; 
@@ -573,8 +573,11 @@ void deadDisplay(){
       }
       rotateFaceTimer.set(ROTATE_FACE_TIME);
     }
-    setColor(makeColorHSB(badBoiHue[badBoiType],sat,dimness));
-    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-100),swirlFace);
+    setColor(makeColorHSB(badBoiHue[badBoiType],sat,dimness-100));
+    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-90),swirlFace);
+    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-60),(swirlFace+1)%6);
+    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness-30),(swirlFace+2)%6);
+    setColorOnFace(makeColorHSB(badBoiHue[badBoiType],sat,dimness),(swirlFace+3)%6);
   }else{
     setColor(makeColorHSB(15,random(70)+170,dimness));
   }
