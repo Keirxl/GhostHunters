@@ -19,7 +19,7 @@
 #define BOSS_TIME 3000
 #define PERIOD 2000
 #define SURVIVAL_TIME 50000 
-#define LEVEL_SIX_SURVIVAL_TIME 70000 
+#define LEVEL_SIX_SURVIVAL_TIME 60000 
 #define INITIAL_SPAWN_TIME 500
 #define ROTATE_FACE_TIME 130
 
@@ -58,7 +58,7 @@ bool isKiller=false;
 
                                               
 //byte spawnRates[18]={80,80,75,80,80,80,3,12,17,3,13,13,101,101,101,97,95,97};
-byte spawnRates[18]={80,80,75,85,80,85,2,8,10,3,8,8,101,101,101,97,95,93};
+byte spawnRates[18]={80,80,75,85,80,85,2,8,10,3,8,12,101,101,101,97,95,93};
 
 void setup() {
   // put your setup code here, to run once:
