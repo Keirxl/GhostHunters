@@ -7,7 +7,6 @@
 //  -Another mob type with multiple hits necessary
 //  -Another weapon like the EMP from previous versions
 //  -Fine tuning difficulty!!
-//  -Color Changes?
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
