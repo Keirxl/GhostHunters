@@ -2,8 +2,13 @@
 //       Ghost Hunters
 //                by Keir Williams
 //
+// Updates to be done for Ghost Hunters 2: The Ghost King
+//  -Final Level to include the boss fight from previous versions
+//  -Another mob type with multiple hits necessary
+//  -Another weapon like the EMP from previous versions
+//  -Fine tuning difficulty!!
+//  -Color Changes?
 //
-//10/29/2020 Updated
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #define PALE makeColorHSB(200,60,60)
